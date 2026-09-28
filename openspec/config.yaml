@@ -1,32 +1,108 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Se inyecta en TODAS las generaciones de artefactos. Conciso a propósito.
+context: |
+  BudgetSpy es una app de iOS para gestionar el presupuesto personal de un
+  único usuario: registrar ingresos y gastos en sus cuentas financieras,
+  categorizar transacciones y ver informes y gráficos. Prioriza la
+  simplicidad y la privacidad.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Glosario (usar siempre estos términos, sin sinónimos):
+  - Cuenta: cuenta financiera del usuario (banco, efectivo, tarjeta...).
+    NO es una cuenta de usuario ni un registro de login.
+  - Tipo de cuenta: clasificación de una cuenta (ahorros, efectivo...).
+  - Transacción: movimiento de dinero asociado a una cuenta.
+  - Tipo de transacción: ingreso o gasto.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  Stack técnico (fijado; no se renegocia en propuestas):
+  - App nativa iOS, target mínimo iOS 26. Solo iPhone.
+  - Swift y SwiftUI.
+  - Persistencia: Core Data (modelo en .xcdatamodeld, acceso centralizado
+    en Persistence). Cambios al modelo usan migración ligera; si no es
+    posible, el design.md MUST explicar la migración.
+  - Arquitectura: MVVM organizado por feature (ver Estructura).
+  - Frameworks permitidos: los de Apple (SwiftUI, Core Data, Swift Charts,
+    SF Symbols). Sin dependencias de terceros salvo justificación escrita.
+  - Pruebas: Swift Testing para ViewModels y lógica de dominio.
+
+  Ubicación del código, ya usa IOS 26.5(no modificar esta disposición):
+  - Raíz del repositorio: .claude/, openspec/, BudgetSpy/, README.md
+  - TODO el código Swift vive bajo BudgetSpy/BudgetSpy/. Nunca crear
+    archivos de código en la raíz del repositorio ni dentro de openspec/.
+  - Proyecto Xcode: BudgetSpy/BudgetSpy.xcodeproj (no editar el .pbxproj a
+    mano; el proyecto usa carpetas sincronizadas, los archivos nuevos se
+    detectan solos).
+  - Modelo de datos: BudgetSpy/BudgetSpy/Core/Persistence/
+
+  Estructura interna de BudgetSpy/BudgetSpy/:
+  - App/ (BudgetSpyApp, ContentView)
+  - Core/Persistence/ (Persistence, .xcdatamodeld)
+  - Core/Shared/ (Formatters y utilidades transversales)
+  - Features/<Feature>/ con Models/, ViewModels/, Views/
+  - ViewModel solo en pantallas con estado o lógica propia (formularios,
+    cálculos, varias acciones). Vistas que solo muestran datos no lo llevan.
+  - DTOs (structs) solo como borrador en formularios de crear/editar y en
+    componentes reutilizables. Listas y pantallas de lectura usan las
+    entidades de Core Data con @FetchRequest.
+  - Las vistas nunca escriben en Core Data directamente; eso lo hace el
+    ViewModel.
+
+  Diseño:
+  - Seguir las Human Interface Guidelines de Apple; debe sentirse como una
+    app de Apple.
+  - Liquid Glass solo en la capa de navegación y controles (tab bar,
+    toolbars, botones flotantes), vía componentes del sistema o
+    .glassEffect(). Nunca en el contenido principal ni con materiales
+    antiguos (.ultraThinMaterial) como sustituto.
+  - Preferir componentes nativos sobre controles personalizados.
+  - Tipografía del sistema con Dynamic Type, modo claro/oscuro y
+    accesibilidad (VoiceOver, Reduce Transparency).
+
+  Principios innegociables:
+  1. Idioma: todo el producto (interfaz, textos, specs, commits,
+     documentación) en español de Colombia, el codigo generado y todas las variables
+     dentro del codigo deben estar en inglés. Los nombres de las entidades y atributos de Core Data
+  2. Simplicidad ante todo: ante dos soluciones, elegir la más simple para
+     el usuario y para el código.
+  3. Privacidad por diseño: el usuario nunca se registra ni inicia sesión.
+     Los datos viven solo en el dispositivo (Core Data local). Sin red, sin
+     sincronización en la nube, sin analítica.
+  4. La spec es la fuente de verdad: todo cambio de comportamiento
+     observable entra como cambio de OpenSpec (propuesta + deltas) o se
+     regulariza como tal. Un comportamiento que openspec/specs/ no describe
+     es un defecto, aunque el código funcione.
+  5. Moneda: única moneda el peso colombiano (COP). Importes con 2
+     decimales, almacenados como Decimal (nunca Double/Float). Formato de
+     visualización: $ 1.000,00 y $ -1.000,00, centralizado en
+     CurrencyFormatter/CurrencyParser, 
+  7. El efecto para escribir valores monetarios dentro de la aplicacione
+     es el siguiente, siempre el numero es 0,00 ,si ingresa un numero este se va a ir agregando 
+     a la derecha del 0,00, si desea borrar un numero este se va a ir eliminando de derecha a izquierda, hasta que quede el 0,00.
+  8. EL usuario nunca puede ingresar en estos campos numericos signos ni cambiar el signo de positivo o negativo, estos campos cambian
+     automaticamente dependiendo de la logica de negocio, si es un ingreso el campo sera positivo y si es un gasto el campo sera negativo.
+  6. Toda Codigo agregado debera de cumplir con el principio SOLID, ademas de cumplir con los principios de Clean Code.  
+  Cualquier excepción a estos principios o al stack requiere justificación
+  escrita en el design.md del cambio.
+
+# Reglas por artefacto: solo se inyectan al generar ese artefacto.
+rules:
+  proposal:
+    - Registra cada decisión de negocio con su fecha
+    - Declara explícitamente qué queda fuera del alcance del cambio
+  specs:
+    - Redacta en español conservando la palabra normativa inglesa de cada
+      requisito (MUST/SHALL), p. ej. "El sistema MUST mostrar el saldo
+      total de todas las cuentas"
+    - Reutiliza los términos del glosario y de las specs vivas; no
+      introduzcas sinónimos nuevos para conceptos existentes
+    - Cada requisito tiene al menos un escenario, incluidos los casos de
+      error y de datos vacíos
+  design:
+    - Indica la ruta completa de cada archivo nuevo, siempre bajo
+      BudgetSpy/BudgetSpy/
+    - Detalla cualquier cambio al modelo de Core Data (entidades,
+      atributos, relaciones, reglas de borrado) y su migración
+    - Ninguna dependencia nueva sin justificación escrita
+  tasks:
+    - Incluye tareas de pruebas para la lógica de cada ViewModel nuevo
+    - Incluye #Preview para cada vista nueva o modificada
