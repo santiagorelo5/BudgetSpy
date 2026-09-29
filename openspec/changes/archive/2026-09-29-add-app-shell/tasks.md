@@ -9,6 +9,7 @@
 
 - [x] 2.1 Crear `BudgetSpy/BudgetSpy/Features/Home/Views/HomeView.swift`: `ScrollView` vacío con `.navigationTitle("Inicio")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Inicio"
 - [x] 2.2 Crear `BudgetSpy/BudgetSpy/Features/Settings/Views/SettingsView.swift`: `ScrollView` vacío con `.navigationTitle("Configuración")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Configuración"
+- [x] 2.3 Quitar `.navigationTitle("Inicio")` de `HomeView.swift` dejando el `ScrollView` vacío; verificar en el preview y en el simulador que la pantalla de Inicio no muestra ningún título y que la barra inferior sigue mostrando "Inicio" seleccionado
 
 ## 3. Shell de navegación
 
@@ -24,5 +25,5 @@
 
 - [ ] 5.1 Tocar Configuración y luego Inicio, verificando que cambia la pantalla y la opción seleccionada en cada caso, y que tocar la opción ya seleccionada no produce errores (CA2, CA3)
 - [ ] 5.2 Verificar la barra en modo claro y en modo oscuro, y con "Reducir transparencia" activado (CA4)
-- [ ] 5.3 Con VoiceOver activo, verificar que las opciones se anuncian como "Inicio" y "Configuración" con su estado de selección; con un tamaño de texto de accesibilidad grande, verificar que los títulos se muestran completos (CA5)
+- [ ] 5.3 Con VoiceOver activo, verificar que las opciones se anuncian como "Inicio" y "Configuración" con su estado de selección; con un tamaño de texto de accesibilidad grande, verificar que el título de Configuración se muestra completo (CA5)
 - [ ] 5.4 Agregar temporalmente contenido desplazable a `HomeView` (sin confirmarlo en el repositorio) y verificar que pasa por detrás de la barra con el efecto Liquid Glass; revertir el contenido temporal y confirmar con `git diff` que no quedó (CA6)

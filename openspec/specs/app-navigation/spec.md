@@ -1,10 +1,10 @@
-# Spec Delta
+# app-navigation Specification
 
 ## Purpose
 
 Define la estructura base de navegación de BudgetSpy: una barra de navegación inferior que permite al usuario moverse entre las secciones principales de la app (Inicio y Configuración), conservando la navegación propia de cada sección.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Barra de navegación inferior con secciones principales
 El sistema MUST mostrar, en la parte inferior de todas las pantallas principales, una barra de navegación del sistema con estilo Liquid Glass que contiene exactamente 2 opciones, en este orden: "Inicio" (ícono de casa) y "Configuración" (ícono de engranaje). El sistema MUST NOT mostrar opciones adicionales en la barra.
@@ -64,19 +64,20 @@ El sistema MUST conservar la navegación de cada sección de forma independiente
 - **WHEN** el usuario cambia de Configuración a Inicio y vuelve, sin haber entrado a ninguna pantalla interna
 - **THEN** se muestra la pantalla principal de Configuración
 
-### Requirement: Pantallas principales vacías con título
-El sistema MUST mostrar la pantalla de Inicio con el título "Inicio" y la pantalla de Configuración con el título "Configuración", sin ningún otro contenido.
+### Requirement: Pantallas principales vacías
+El sistema MUST mostrar la pantalla de Inicio completamente vacía, sin título ni ningún otro contenido. El sistema MUST mostrar la pantalla de Configuración con el título "Configuración", sin ningún otro contenido.
 
 #### Scenario: Pantalla de Inicio vacía
 - **WHEN** se muestra la pantalla de Inicio
-- **THEN** se ve el título "Inicio" y ningún otro contenido
+- **THEN** no se ve ningún título ni contenido en la pantalla
+- **AND** la barra de navegación inferior sigue visible con la opción "Inicio" seleccionada
 
 #### Scenario: Pantalla de Configuración vacía
 - **WHEN** se muestra la pantalla de Configuración
 - **THEN** se ve el título "Configuración" y ningún otro contenido
 
 ### Requirement: Accesibilidad de la barra de navegación
-El sistema MUST anunciar con VoiceOver cada opción de la barra con su nombre y su estado de selección, y MUST respetar el tamaño de texto dinámico del sistema en los títulos de las pantallas.
+El sistema MUST anunciar con VoiceOver cada opción de la barra con su nombre y su estado de selección, y MUST respetar el tamaño de texto dinámico del sistema en el título de la pantalla de Configuración.
 
 #### Scenario: VoiceOver anuncia las opciones
 - **WHEN** VoiceOver está activo y el usuario enfoca una opción de la barra
@@ -85,7 +86,7 @@ El sistema MUST anunciar con VoiceOver cada opción de la barra con su nombre y 
 
 #### Scenario: Texto dinámico grande
 - **WHEN** el usuario tiene configurado un tamaño de texto de accesibilidad grande
-- **THEN** los títulos "Inicio" y "Configuración" se muestran completos con el tamaño correspondiente
+- **THEN** el título "Configuración" se muestra completo con el tamaño correspondiente
 
 ### Requirement: Solo orientación vertical
 El sistema MUST funcionar únicamente en orientación vertical en iPhone.

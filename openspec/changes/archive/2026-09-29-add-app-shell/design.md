@@ -50,7 +50,7 @@ Tab("Inicio", systemImage: "house", value: AppTab.home) {
 - **Alternativa descartada:** una sola `NavigationStack` que envuelva el `TabView` — las pantallas internas taparían la barra y se perdería la navegación independiente.
 
 ### 3. Pantallas de sección sin ViewModel
-`HomeView` y `SettingsView` solo muestran un título mediante `.navigationTitle(...)` (título grande del sistema) sobre un `ScrollView` vacío. No tienen estado ni lógica, así que no llevan ViewModel (regla del proyecto). El `ScrollView` vacío no muestra contenido visible; deja la pantalla preparada para que el contenido futuro se desplace por detrás de la barra y colapse el título grande según las HIG.
+`HomeView` es un `ScrollView` vacío **sin** `.navigationTitle`, por lo que la barra superior queda vacía y transparente; sigue dentro de su `NavigationStack` para recibir pantallas internas en el futuro. `SettingsView` muestra su título mediante `.navigationTitle("Configuración")` (título grande del sistema) sobre un `ScrollView` vacío. No tienen estado ni lógica, así que no llevan ViewModel (regla del proyecto). El `ScrollView` vacío no muestra contenido visible; deja la pantalla preparada para que el contenido futuro se desplace por detrás de la barra y colapse el título grande según las HIG.
 
 ### 4. Textos en español como literales
 Los textos visibles ("Inicio", "Configuración") se escriben como literales de `LocalizedStringKey` en español; los identificadores del código van en inglés (`HomeView`, `SettingsView`, `AppTab.home`, `AppTab.settings`). No se introduce String Catalog en este cambio (simplicidad).
@@ -64,7 +64,7 @@ Se cambia en Xcode → target BudgetSpy → General → Deployment Info → iPho
 Nuevos:
 - `BudgetSpy/BudgetSpy/App/ContentView.swift` — `TabView` raíz con las dos secciones y sus `NavigationStack`. Incluye `#Preview`.
 - `BudgetSpy/BudgetSpy/App/AppTab.swift` — `enum AppTab` con los casos `home` y `settings`.
-- `BudgetSpy/BudgetSpy/Features/Home/Views/HomeView.swift` — pantalla Inicio vacía con título. Incluye `#Preview` envuelto en `NavigationStack`.
+- `BudgetSpy/BudgetSpy/Features/Home/Views/HomeView.swift` — pantalla Inicio completamente vacía, sin título. Incluye `#Preview` envuelto en `NavigationStack`.
 - `BudgetSpy/BudgetSpy/Features/Settings/Views/SettingsView.swift` — pantalla Configuración vacía con título. Incluye `#Preview` envuelto en `NavigationStack`.
 
 Movidos / modificados:
@@ -75,6 +75,7 @@ Modelo de Core Data: sin cambios. Dependencias nuevas: ninguna.
 
 ## Risks / Trade-offs
 
+- [Sin título, Inicio queda sin ninguna referencia visual propia] → La opción "Inicio" seleccionada en la barra indica la sección actual.
 - [Pantallas vacías: no hay contenido que desplazar para comprobar CA6] → El efecto lo aplica el sistema al `TabView`; se verifica temporalmente en el `#Preview` o en el simulador con contenido de prueba que no se confirma en el repositorio.
 - [El target sigue soportando iPad con todas las orientaciones, contrario al stack "Solo iPhone"] → Fuera de alcance; se registra para un cambio de configuración posterior.
 - [Mover `BudgetSpyApp.swift` puede dejar referencias rotas si Xcode no reconoce el movimiento] → Las carpetas sincronizadas lo detectan; se verifica compilando el proyecto.

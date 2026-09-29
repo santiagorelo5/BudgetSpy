@@ -10,7 +10,7 @@ Hoy la app solo muestra un texto "Hola Mundo" y no tiene ninguna estructura de n
 - La barra tiene exactamente 2 opciones, en este orden: **Inicio** (ícono de casa) y **Configuración** (ícono de engranaje).
 - Al abrir la app, la opción seleccionada por defecto es **Inicio**.
 - Cada sección conserva su propia pila de navegación de forma independiente.
-- Se crean las pantallas **Inicio** y **Configuración**, vacías, solo con su título.
+- Se crea la pantalla **Inicio** completamente vacía, sin título, y la pantalla **Configuración** vacía, solo con su título.
 - La app queda restringida a orientación vertical en iPhone.
 
 ### Decisiones de negocio
@@ -22,10 +22,11 @@ Hoy la app solo muestra un texto "Hola Mundo" y no tiene ninguna estructura de n
 | 2026-09-29 | Cada sección conserva su propia navegación interna al cambiar de sección. |
 | 2026-09-29 | Las pantallas Inicio y Configuración se entregan vacías, solo con su título. |
 | 2026-09-29 | La app funciona solo en orientación vertical. |
+| 2026-09-29 | La pantalla Inicio se muestra completamente vacía, sin título grande; Configuración conserva su título. |
 
 ### Fuera de alcance
 
-- Cualquier contenido dentro de Inicio o de Configuración: solo pantallas vacías con título.
+- Cualquier contenido dentro de Inicio o de Configuración: Inicio vacía sin título; Configuración vacía con título.
 - Cuentas, tarjetas, carrusel, Datos Maestros y persistencia de datos.
 - Opciones adicionales en la barra de navegación.
 - Pantallas internas de Configuración (la conservación de la navegación por sección se deja preparada, pero no hay pantallas internas todavía).
@@ -34,7 +35,7 @@ Hoy la app solo muestra un texto "Hola Mundo" y no tiene ninguna estructura de n
 ## Capabilities
 
 ### New Capabilities
-- `app-navigation`: estructura base de navegación de la app — barra inferior con las secciones Inicio y Configuración, sección por defecto, navegación independiente por sección, pantallas vacías con título, accesibilidad y orientación vertical.
+- `app-navigation`: estructura base de navegación de la app — barra inferior con las secciones Inicio y Configuración, sección por defecto, navegación independiente por sección, pantallas principales vacías (Inicio sin título, Configuración con título), accesibilidad y orientación vertical.
 
 ### Modified Capabilities
 - Ninguna.
