@@ -1,0 +1,45 @@
+/opsx:propose add-app-shell — El objetivo es crear la estructura base de navegación de la
+aplicación, con una barra inferior que permita moverse entre Inicio y Configuración.
+
+## 1. Escenarios de usuario (historias)
+- HU1 - Yo como usuario quiero ver una barra de navegación en la parte inferior para moverme
+        entre las secciones principales de la aplicación.
+- HU2 - Yo como usuario quiero que al abrir la aplicación se muestre la pantalla de Inicio.
+- HU3 - Yo como usuario quiero acceder a la pantalla de Configuración desde la barra de navegación.
+
+## 2. Reglas de negocio (con ejemplos)
+- La barra de navegación tiene exactamente 2 opciones, en este orden:
+    1. Inicio (ícono de casa)
+    2. Configuración (ícono de engranaje)
+- Al abrir la aplicación, la opción seleccionada por defecto es Inicio.
+- Cada sección conserva su propia navegación: si en el futuro el usuario entra a una pantalla
+  interna de Configuración, cambia a Inicio y vuelve, sigue en la pantalla interna donde estaba.
+
+## 3. Requisitos funcionales
+- RF1 - En la parte inferior de todas las pantallas principales debe existir una barra de
+        navegación con estilo Liquid Glass y las opciones Inicio y Configuración.
+- RF2 - La opción seleccionada debe distinguirse visualmente de la no seleccionada.
+- RF3 - La pantalla de Inicio se muestra vacía, solo con su título "Inicio".
+- RF4 - La pantalla de Configuración se muestra vacía, solo con su título "Configuración".
+
+## 4. Criterios de aceptación (verificables sin código)
+- CA1 - Al abrir la app, se ve la pantalla de Inicio y la opción Inicio aparece seleccionada.
+- CA2 - Al tocar Configuración, se muestra la pantalla de Configuración y esa opción queda seleccionada.
+- CA3 - Al tocar Inicio desde Configuración, se vuelve a la pantalla de Inicio.
+- CA4 - La barra se ve correctamente en modo claro y en modo oscuro.
+- CA5 - Con VoiceOver activo, cada opción de la barra se anuncia con su nombre ("Inicio", "Configuración").
+- CA6 - El contenido de cada pantalla se desplaza por detrás de la barra, con el efecto de
+        transparencia de Liquid Glass.
+- CA7 - La app funciona solo en orientación vertical
+
+## 5. Fuera de alcance
+- No se implementa ningún contenido dentro de Inicio ni de Configuración: solo pantallas vacías con título.
+- No se implementan cuentas, tarjetas, carrusel, Datos Maestros ni persistencia de datos.
+- No se agregan más opciones a la barra de navegación.
+
+## 6. Notas técnicas (para design.md)
+- SwiftUI, iOS 26.0 mínimo
+- Usar el `TabView` nativo con la API `Tab`; el estilo Liquid Glass lo aplica el sistema.
+  No construir una barra de navegación personalizada.
+- Cada tab envuelve su contenido en su propio `NavigationStack`.
+- Íconos con SF Symbols: `house` y `gearshape`.

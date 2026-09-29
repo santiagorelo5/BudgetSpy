@@ -1,0 +1,68 @@
+/opsx:propose add-Accounts — El Objetivo es que el usuario pueda gestionar sus diferentes cuentas
+pueda crear, editar, eliminar sus cuentas.
+
+
+## 1. Escenarios de usuario (historias)
+-HU1 - yo como usuario, quiero gestionar mis diferentes cuentas que tengo en el banco, dentro de la aplicacion
+
+
+
+## 2. Reglas de negocio (con ejemplos)
+[Las reglas que no se pueden saltar, cada una con un ejemplo concreto que se pueda comprobar.]
+- Cada "Cuenta" debe de guardar almenos esta informacion:
+    nombre: Nombre de la cuenta o nickname de la cuenta (Obligatorio)
+    numero de tarjeta: 4 Ultimos dijitos numericos, para representar en la tarjeta (Obligatorio)
+    balance: Cantidad monetaria de la tarjeta, tiene que se valores positivos y mayores o igual a 0 (obligatorio).
+    limite: Cantidad limite (Obligatorio si es tipo de tarjeta de credito, nulo para cuenta de ahorros)
+    tipo de cuenta: tipo de cuenta a crear(Obligatorio)
+- Cada "Tipo de cuenta" guardar almenos esta informacion:
+    tipo: Nombre del tipo de cuenta (obligatorio)
+    abreviacion: Nombre aberviado por 2 letras para distiguirlo y reconocerlo mas facil
+- se debe de crear estos 2 tipos de cuenta por default, que serian datos semilla y no son editables para el usuario.
+    - Cuenta de Ahorros : "CA"
+    - Tarjeta de Credito: "TC"
+
+## 3. Requisitos funcionales
+- RF1. El sistema debe [comportamiento observable].   [QUÉ hace, no CÓMO. Sin tecnología.]
+RF1 - El formulario del CRUD de Cuentas debe de tener una representacion grafica de tarjeta de credito en la parte superior,
+      y en la parte inferior todos los campos requeridos y opcionales, a medida que va el usuario va llenando se repizan en el grafico
+      de tarjeta, debe de tener la opcion de guardar cambio 0 crear cuenta, y tambien debe de tener el boton de devolverme preguntar si desea perder cambios y que me deje en el home
+RF2- En la parte inferior de la pantalla debe de existir una barra de navegacion(liquid Glass), con 2 opciones una para visualizar el home y
+     la otra para configuraciones.
+RF3 - En la pantalla de Home, se debe de representar en la parte superiro las cuentas con diseño de tarjeta de credito, todas en forma horizontal, y
+      se puede tener el efecto de deslizar para pasar visualizar todas las tarjetas, 
+      siempre representar una tarjeta vacia con el signo mas al final, que este te llevara al formulario de cuentas.
+RF4 - Si se le da Click sostenido a una Cuenta, mostrar un menu desplegable con la opcion de borrar (confimacion obligatoria de si desea eliminar) y de editar la cuenta que lo llevara
+      al formulario para editar los datos de la tarjeta.
+RF5 - Si le da click sencillo a la tarjeta, no hacer nada por el momento.
+RF6 - En la pantalla de configuraciones, crear un list pero por ahora solo con un itme de Datos Maestros, y dentro de esta, 
+      List con Tipos de cuenta, y que el usuario pueda ver los 2 tipos de cuentas creados
+RF7 - Al momento de crear o actualizar cualquier tarjeta, vuelve al Home y se deberan de tener todos los datos actualizados.
+
+
+
+
+## 4. Criterios de aceptación (verificables sin código)
+- CA1. [Algo que se mira en la app y se sabe si está bien con un sí/no.]
+-CA1 - Crear cuenta de tipo Ahorros es posible, si tiene nombre, numero de tarjeta no nulos ; blance puede ser 0 y numeros positivo.
+-CA2 - Para cuenta tipo Ahorros ocultar a el usuario el campo limite y que se guarde siempre vacio
+-CA3 - Crear Cuenta de Tipo Tarjeta de credito es posible, si tiene nombre, numero de tarjeta no nulos ;  balance y limites puede ser 0 y numeros positivos.
+-CA4 - Para el formulario de crear cuenta el campo balance debe de preguntarle a el usuario :
+       si es tipo de cuenta de ahorro, balance debe de preguntar "saldo en la cuenta"
+       si es tipo de cuenta Tarjeta de credito, balance debe de preguntar "deuda a la fecha" y se guarda en positivo
+-CA5 - El limite debe de ser un valor positivo y debe de ser mayor o igual a balance (en caso de ser tarjeta de credito)
+-CA6 - EL formulario por default debe de venir seleccionado con el tipo de cuenta Ahorros.
+
+CA7 - En el Home en la parte superior, deben de estar todas la cuentas con un diseño de tarjeta de credito, y puedo deslizar entre una y otra
+      para ver todas
+CA8 - En el diseño de la tarjeta de credito debe de visualizarse esta informacion
+        si es cuenta de ahorros: 
+        tipo de cuenta.nombre completo , nombre de cuenta, numero de la tarjeta representado con **** y utlimos 4 digitos, saldo disponible
+        si es tipo de cuenta tarjeta de credito: 
+        tipo de cuenta.nombre completo, nombre de cuenta, numero de la tarjeta representado con *** y ultimos 4 digito, deuda a la fecha (valor positivo siempre)
+
+## 5. Fuera de alcance
+[Lo que esta versión NO hace, dicho explícitamente. La sección que impide que la IA se vaya por las ramas.]
+- En el home solo se implementa la visualizacion de las tarjetas, no implementar algo mas,  esta fuera del alcance
+- En la Configuraciones, solo implementar los Datos Maestros, no implementar nada mas, esta fuera del alcance.
+- los Datos maestros solo se consultan, editar y gestionarlos esta fuera del alcance.
