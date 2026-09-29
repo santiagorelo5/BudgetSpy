@@ -27,6 +27,7 @@ Hoy BudgetSpy solo tiene la estructura de navegación (change `add-app-shell`): 
 | 2026-09-29 | El Tipo de cuenta queda bloqueado al editar una Cuenta. |
 | 2026-09-29 | La eliminación de una Cuenta es definitiva y siempre pide confirmación. |
 | 2026-09-29 | El carrusel se ordena por fecha de creación (la más antigua primero) y siempre termina con la tarjeta "+". |
+| 2026-09-29 | Diseño de la tarjeta: tono oscuro (Cuenta de Ahorros azul marino, Tarjeta de Crédito grafito) con sombreado que se oscurece hacia la derecha; ícono por Tipo de cuenta (billete / tarjeta) e ícono de pago sin contacto. El balance lleva el rótulo "Saldo disponible" o "Deuda a la fecha", que también es el título del campo en el formulario. |
 | 2026-09-29 | Al regresar del formulario se pregunta solo si hubo cambios respecto a los valores iniciales. |
 | 2026-09-29 | El botón principal del formulario está deshabilitado mientras haya campos inválidos. |
 | 2026-09-29 | Los importes (balance y límite) se ingresan con el efecto de digitación de la app (desde 0,00, dígitos a la derecha) y sin signo; por eso un balance negativo no se puede digitar, aunque la regla se sigue validando. |

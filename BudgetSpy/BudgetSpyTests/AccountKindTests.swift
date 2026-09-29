@@ -10,7 +10,7 @@ import Testing
 struct AccountKindTests {
     @Test func savingsTexts() {
         #expect(AccountKind.savings.displayName == "Cuenta de Ahorros")
-        #expect(AccountKind.savings.balanceTitle == "Saldo en la cuenta")
+        #expect(AccountKind.savings.balanceTitle == "Saldo disponible")
         #expect(AccountKind.savings.requiresCreditLimit == false)
     }
 

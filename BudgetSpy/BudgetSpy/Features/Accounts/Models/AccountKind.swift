@@ -21,7 +21,7 @@ enum AccountKind: String, CaseIterable, Identifiable {
 
     var balanceTitle: String {
         switch self {
-        case .savings: "Saldo en la cuenta"
+        case .savings: "Saldo disponible"
         case .creditCard: "Deuda a la fecha"
         }
     }

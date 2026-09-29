@@ -85,15 +85,15 @@ El formulario de Cuenta MUST mostrar una tarjeta gráfica en la parte superior y
 
 #### Scenario: Tarjeta gráfica sin datos
 - **WHEN** el usuario abre el formulario para crear
-- **THEN** la tarjeta gráfica muestra el Tipo de cuenta "Cuenta de Ahorros", un nombre de ejemplo atenuado, "**** ----" y "$ 0,00"
+- **THEN** la tarjeta gráfica muestra el Tipo de cuenta "Cuenta de Ahorros", un nombre de ejemplo atenuado, "**** ----", el rótulo "Saldo disponible" y "$ 0,00"
 
 ### Requirement: Campos según el Tipo de cuenta
-Al crear una Cuenta, el formulario MUST traer seleccionado el Tipo de cuenta "Cuenta de Ahorros". Con Cuenta de Ahorros, el campo balance MUST titularse "Saldo en la cuenta" y el campo límite MUST NOT mostrarse. Con Tarjeta de Crédito, el campo balance MUST titularse "Deuda a la fecha" y el campo límite MUST mostrarse. Al pasar de Tarjeta de Crédito a Cuenta de Ahorros, el valor del límite MUST descartarse.
+Al crear una Cuenta, el formulario MUST traer seleccionado el Tipo de cuenta "Cuenta de Ahorros". Con Cuenta de Ahorros, el campo balance MUST titularse "Saldo disponible" y el campo límite MUST NOT mostrarse. Con Tarjeta de Crédito, el campo balance MUST titularse "Deuda a la fecha" y el campo límite MUST mostrarse. Al pasar de Tarjeta de Crédito a Cuenta de Ahorros, el valor del límite MUST descartarse.
 
 #### Scenario: Tipo por defecto al crear
 - **WHEN** el usuario abre el formulario para crear una Cuenta
 - **THEN** el Tipo de cuenta seleccionado es "Cuenta de Ahorros"
-- **AND** el balance se titula "Saldo en la cuenta" y el campo límite no se ve
+- **AND** el balance se titula "Saldo disponible" y el campo límite no se ve
 
 #### Scenario: Seleccionar Tarjeta de Crédito
 - **WHEN** el usuario selecciona "Tarjeta de Crédito"
@@ -177,19 +177,24 @@ El Inicio MUST mostrar en su parte superior las Cuentas como tarjetas gráficas 
 - **THEN** se abre el formulario para crear una Cuenta
 
 ### Requirement: Contenido de la tarjeta gráfica
-Cada tarjeta gráfica MUST mostrar el nombre completo del Tipo de cuenta, el nombre de la Cuenta, "**** " seguido de los últimos 4 dígitos y el balance. En Cuenta de Ahorros el balance es el saldo disponible; en Tarjeta de Crédito es la deuda a la fecha, siempre como valor positivo. Las tarjetas MUST verse legibles en modo claro y oscuro, y el texto MUST respetar el tamaño de texto dinámico.
+Cada tarjeta gráfica MUST mostrar el nombre completo del Tipo de cuenta, el nombre de la Cuenta, "**** " seguido de los últimos 4 dígitos y el balance con un rótulo encima: "Saldo disponible" en Cuenta de Ahorros y "Deuda a la fecha" en Tarjeta de Crédito. En Cuenta de Ahorros el balance es el saldo disponible; en Tarjeta de Crédito es la deuda a la fecha, siempre como valor positivo. La tarjeta MUST mostrar un ícono según el Tipo de cuenta (billete en Cuenta de Ahorros, tarjeta en Tarjeta de Crédito) y un ícono de pago sin contacto junto a los dígitos. El fondo MUST ser oscuro según el Tipo de cuenta (azul marino en Cuenta de Ahorros, grafito en Tarjeta de Crédito) con un sombreado que se oscurece hacia la derecha. Las tarjetas MUST verse legibles en modo claro y oscuro, y el texto MUST respetar el tamaño de texto dinámico.
 
 #### Scenario: Tarjeta de Cuenta de Ahorros
 - **WHEN** existe la Cuenta de Ahorros "Nómina" con número "4821" y saldo $ 1.250.000,00
-- **THEN** su tarjeta muestra "Cuenta de Ahorros", "Nómina", "**** 4821" y "$ 1.250.000,00"
+- **THEN** su tarjeta muestra "Cuenta de Ahorros", "Nómina", "**** 4821", "Saldo disponible" y "$ 1.250.000,00"
 
 #### Scenario: Tarjeta de Tarjeta de Crédito
 - **WHEN** existe la Tarjeta de Crédito "Visa" con número "1234" y deuda $ 1.200.000,00
-- **THEN** su tarjeta muestra "Tarjeta de Crédito", "Visa", "**** 1234" y "$ 1.200.000,00" sin signo negativo
+- **THEN** su tarjeta muestra "Tarjeta de Crédito", "Visa", "**** 1234", "Deuda a la fecha" y "$ 1.200.000,00" sin signo negativo
 
 #### Scenario: Balance en cero
 - **WHEN** una Cuenta tiene balance $ 0,00
 - **THEN** su tarjeta muestra "$ 0,00"
+
+#### Scenario: Íconos de la tarjeta
+- **WHEN** se muestra la tarjeta de una Cuenta de Ahorros
+- **THEN** la tarjeta muestra el ícono de billete y el ícono de pago sin contacto
+- **AND** VoiceOver no lee los íconos por separado
 
 #### Scenario: Modo oscuro
 - **WHEN** el dispositivo está en modo oscuro

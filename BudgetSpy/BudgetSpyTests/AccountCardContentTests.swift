@@ -3,6 +3,7 @@
 //  BudgetSpyTests
 //
 
+import Foundation
 import Testing
 @testable import BudgetSpy
 

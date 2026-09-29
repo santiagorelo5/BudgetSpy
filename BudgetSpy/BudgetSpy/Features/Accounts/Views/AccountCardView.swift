@@ -22,16 +22,36 @@ struct AccountCardView: View {
         }
         .frame(maxWidth: .infinity)
         .foregroundStyle(.white)
-        .background(content.kind.cardGradient, in: .rect(cornerRadius: Self.cornerRadius))
+        .background {
+            RoundedRectangle(cornerRadius: Self.cornerRadius)
+                .fill(content.kind.cardGradient)
+                .overlay(Self.rightShading, in: .rect(cornerRadius: Self.cornerRadius))
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(content.accessibilityLabel)
     }
 
+    /// Darkens the right edge so the card looks lit from the left.
+    private static let rightShading = LinearGradient(
+        colors: [.clear, .black.opacity(0.35)],
+        startPoint: UnitPoint(x: 0.45, y: 0.5),
+        endPoint: .trailing
+    )
+
     private var details: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(content.kind.displayName)
-                .font(.subheadline.weight(.semibold))
-                .opacity(0.85)
+            HStack(alignment: .firstTextBaseline) {
+                Text(content.kind.displayName)
+                    .font(.subheadline.weight(.semibold))
+                    .opacity(0.85)
+
+                Spacer()
+
+                Image(systemName: content.kind.cardSymbolName)
+                    .font(.title3)
+                    .opacity(0.9)
+                    .accessibilityHidden(true)
+            }
 
             Text(content.displayedName)
                 .font(.title3.weight(.bold))
@@ -40,29 +60,49 @@ struct AccountCardView: View {
 
             Spacer(minLength: 12)
 
-            Text(content.maskedLastFourDigits)
-                .font(.body.monospaced())
+            HStack(spacing: 8) {
+                Text(content.maskedLastFourDigits)
+                    .font(.body.monospaced())
 
-            Text(content.formattedBalance)
-                .font(.title2.weight(.semibold))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+                Image(systemName: "wave.3.right")
+                    .font(.subheadline)
+                    .opacity(0.8)
+                    .accessibilityHidden(true)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(content.kind.balanceTitle)
+                    .font(.caption)
+                    .opacity(0.85)
+
+                Text(content.formattedBalance)
+                    .font(.title2.weight(.semibold))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 }
 
 private extension AccountKind {
-    /// Fixed colors with enough contrast for white text in light and dark mode.
+    /// Fixed dark colors with enough contrast for white text in light and dark mode.
     var cardGradient: LinearGradient {
         let colors: [Color] = switch self {
         case .savings:
-            [Color(red: 0.04, green: 0.25, blue: 0.60), Color(red: 0.07, green: 0.44, blue: 0.80)]
+            [Color(red: 0.12, green: 0.23, blue: 0.54), Color(red: 0.06, green: 0.12, blue: 0.36)]
         case .creditCard:
-            [Color(red: 0.20, green: 0.13, blue: 0.50), Color(red: 0.45, green: 0.18, blue: 0.62)]
+            [Color(red: 0.29, green: 0.29, blue: 0.31), Color(red: 0.16, green: 0.16, blue: 0.18)]
         }
-        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .trailing)
+    }
+
+    var cardSymbolName: String {
+        switch self {
+        case .savings: "banknote"
+        case .creditCard: "creditcard"
+        }
     }
 }
 

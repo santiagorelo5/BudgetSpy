@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		41EE6CCC306C557700906F02 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 41EE6BCF306B0DAA00906F02 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41EE6BD6306B0DAA00906F02;
+			remoteInfo = BudgetSpy;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		41EE6BD7306B0DAA00906F02 /* BudgetSpy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BudgetSpy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41EE6CC8306C557700906F02 /* BudgetSpyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetSpyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = BudgetSpy;
 			sourceTree = "<group>";
 		};
+		41EE6CC9306C557700906F02 /* BudgetSpyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BudgetSpyTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		41EE6BD4306B0DAA00906F02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41EE6CC5306C557700906F02 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				41EE6BD9306B0DAA00906F02 /* BudgetSpy */,
+				41EE6CC9306C557700906F02 /* BudgetSpyTests */,
 				41EE6BD8306B0DAA00906F02 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				41EE6BD7306B0DAA00906F02 /* BudgetSpy.app */,
+				41EE6CC8306C557700906F02 /* BudgetSpyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 41EE6BD7306B0DAA00906F02 /* BudgetSpy.app */;
 			productType = "com.apple.product-type.application";
 		};
+		41EE6CC7306C557700906F02 /* BudgetSpyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 41EE6CCE306C557700906F02 /* Build configuration list for PBXNativeTarget "BudgetSpyTests" */;
+			buildPhases = (
+				41EE6CC4306C557700906F02 /* Sources */,
+				41EE6CC5306C557700906F02 /* Frameworks */,
+				41EE6CC6306C557700906F02 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				41EE6CCD306C557700906F02 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				41EE6CC9306C557700906F02 /* BudgetSpyTests */,
+			);
+			name = BudgetSpyTests;
+			packageProductDependencies = (
+			);
+			productName = BudgetSpyTests;
+			productReference = 41EE6CC8306C557700906F02 /* BudgetSpyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					41EE6BD6306B0DAA00906F02 = {
 						CreatedOnToolsVersion = 26.5;
+					};
+					41EE6CC7306C557700906F02 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 41EE6BD6306B0DAA00906F02;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				41EE6BD6306B0DAA00906F02 /* BudgetSpy */,
+				41EE6CC7306C557700906F02 /* BudgetSpyTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		41EE6BD5306B0DAA00906F02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41EE6CC6306C557700906F02 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		41EE6CC4306C557700906F02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		41EE6CCD306C557700906F02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41EE6BD6306B0DAA00906F02 /* BudgetSpy */;
+			targetProxy = 41EE6CCC306C557700906F02 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		41EE6BE5306B0DAB00906F02 /* Debug */ = {
@@ -306,6 +381,46 @@
 			};
 			name = Release;
 		};
+		41EE6CCF306C557700906F02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bateria.app.BudgetSpyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BudgetSpy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BudgetSpy";
+			};
+			name = Debug;
+		};
+		41EE6CD0306C557700906F02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bateria.app.BudgetSpyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BudgetSpy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BudgetSpy";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -323,6 +438,15 @@
 			buildConfigurations = (
 				41EE6BE8306B0DAB00906F02 /* Debug */,
 				41EE6BE9306B0DAB00906F02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		41EE6CCE306C557700906F02 /* Build configuration list for PBXNativeTarget "BudgetSpyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				41EE6CCF306C557700906F02 /* Debug */,
+				41EE6CD0306C557700906F02 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

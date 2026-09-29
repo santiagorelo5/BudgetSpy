@@ -47,8 +47,8 @@ struct CurrencyField: View {
     @Previewable @State var amount: Decimal = 0
 
     Form {
-        LabeledContent("Saldo en la cuenta") {
-            CurrencyField("Saldo en la cuenta", amount: $amount)
+        LabeledContent("Saldo disponible") {
+            CurrencyField("Saldo disponible", amount: $amount)
                 .multilineTextAlignment(.trailing)
         }
         LabeledContent("Valor guardado", value: "\(amount)")
