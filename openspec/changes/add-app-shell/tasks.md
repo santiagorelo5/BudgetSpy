@@ -2,18 +2,18 @@
 
 ## 1. Estructura de carpetas y punto de entrada
 
-- [ ] 1.1 Mover `BudgetSpy/BudgetSpy/BudgetSpyApp.swift` a `BudgetSpy/BudgetSpy/App/BudgetSpyApp.swift` y verificar que el proyecto compila en Xcode sin referencias rotas
-- [ ] 1.2 Crear `BudgetSpy/BudgetSpy/App/AppTab.swift` con `enum AppTab: Hashable { case home, settings }` y verificar que compila
+- [x] 1.1 Mover `BudgetSpy/BudgetSpy/BudgetSpyApp.swift` a `BudgetSpy/BudgetSpy/App/BudgetSpyApp.swift` y verificar que el proyecto compila en Xcode sin referencias rotas
+- [x] 1.2 Crear `BudgetSpy/BudgetSpy/App/AppTab.swift` con `enum AppTab: Hashable { case home, settings }` y verificar que compila
 
 ## 2. Pantallas de sección
 
-- [ ] 2.1 Crear `BudgetSpy/BudgetSpy/Features/Home/Views/HomeView.swift`: `ScrollView` vacío con `.navigationTitle("Inicio")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Inicio"
-- [ ] 2.2 Crear `BudgetSpy/BudgetSpy/Features/Settings/Views/SettingsView.swift`: `ScrollView` vacío con `.navigationTitle("Configuración")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Configuración"
+- [x] 2.1 Crear `BudgetSpy/BudgetSpy/Features/Home/Views/HomeView.swift`: `ScrollView` vacío con `.navigationTitle("Inicio")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Inicio"
+- [x] 2.2 Crear `BudgetSpy/BudgetSpy/Features/Settings/Views/SettingsView.swift`: `ScrollView` vacío con `.navigationTitle("Configuración")` y `#Preview` envuelto en `NavigationStack`; verificar en el preview que solo se ve el título "Configuración"
 
 ## 3. Shell de navegación
 
-- [ ] 3.1 Crear `BudgetSpy/BudgetSpy/App/ContentView.swift` con `TabView(selection:)`, `@State private var selectedTab: AppTab = .home` y los `Tab` "Inicio" (`house`) y "Configuración" (`gearshape`) en ese orden, cada uno envolviendo su vista en su propia `NavigationStack`; incluir `#Preview` y verificar en él que se muestra Inicio seleccionado
-- [ ] 3.2 Reemplazar `Text("Hola Mundo")` por `ContentView()` en el `WindowGroup` de `App/BudgetSpyApp.swift` y verificar que al ejecutar en el simulador se ve la barra con Inicio seleccionado (CA1)
+- [x] 3.1 Crear `BudgetSpy/BudgetSpy/App/ContentView.swift` con `TabView(selection:)`, `@State private var selectedTab: AppTab = .home` y los `Tab` "Inicio" (`house`) y "Configuración" (`gearshape`) en ese orden, cada uno envolviendo su vista en su propia `NavigationStack`; incluir `#Preview` y verificar en él que se muestra Inicio seleccionado
+- [x] 3.2 Reemplazar `Text("Hola Mundo")` por `ContentView()` en el `WindowGroup` de `App/BudgetSpyApp.swift` y verificar que al ejecutar en el simulador se ve la barra con Inicio seleccionado (CA1)
 
 ## 4. Orientación
 

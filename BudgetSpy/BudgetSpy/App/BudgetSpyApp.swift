@@ -14,7 +14,7 @@ struct BudgetSpyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Text("Hola Mundo")
+            ContentView()
         }
     }
 }
