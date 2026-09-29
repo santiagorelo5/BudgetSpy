@@ -1,68 +1,137 @@
-/opsx:propose add-Accounts — El Objetivo es que el usuario pueda gestionar sus diferentes cuentas
-pueda crear, editar, eliminar sus cuentas.
+/opsx:propose add-accounts — El objetivo es que el usuario pueda gestionar sus diferentes cuentas:
+crear, ver, editar y eliminar sus cuentas.
 
+Contexto: la barra de navegación y las pantallas de Inicio y Configuración ya existen
+(change add-app-shell). Este change agrega contenido a esas pantallas, no las recrea.
 
-## 1. Escenarios de usuario (historias)
--HU1 - yo como usuario, quiero gestionar mis diferentes cuentas que tengo en el banco, dentro de la aplicacion
+## 1. Historias de usuario
+- HU1 - Yo como usuario quiero crear mis cuentas bancarias para separar mi dinero dentro de la aplicación.
+- HU2 - Yo como usuario quiero ver mis cuentas como tarjetas en el Inicio para identificarlas rápidamente.
+- HU3 - Yo como usuario quiero editar una cuenta para corregir o actualizar sus datos.
+- HU4 - Yo como usuario quiero eliminar una cuenta que ya no uso.
+- HU5 - Yo como usuario quiero consultar los tipos de cuenta disponibles desde Configuración.
 
+## 2. Glosario
+- Cuenta: cuenta bancaria del usuario registrada en la app.
+- Tipo de cuenta: clasificación de la cuenta (Cuenta de Ahorros o Tarjeta de Crédito).
+- Balance: para Cuenta de Ahorros es el saldo disponible; para Tarjeta de Crédito es la deuda a la
+  fecha. Siempre es mayor o igual a 0.
+- Límite: cupo máximo de una Tarjeta de Crédito.
+- Tarjeta gráfica: representación visual con diseño de tarjeta de crédito de una cuenta.
+- Formulario de cuenta: pantalla para crear o editar una cuenta.
 
+## 3. Reglas de negocio (con ejemplos)
+- Entidad "Cuenta", campos:
+    nombre: nombre o apodo de la cuenta. Obligatorio. Máximo 20 caracteres.
+        puede repetirse.
+        Ej.: "Nómina Bancolombia" → válido; "" → error.
+    número de tarjeta: últimos 4 dígitos. Obligatorio. Exactamente 4 caracteres numéricos.
+        Ej.: "4821" → válido; "482" → error; "48A1" → error.
+    balance: obligatorio, mayor o igual a 0.
+        En Tarjeta de Crédito representa la deuda y se guarda en positivo.
+        Ej.: 0,00 → válido; 1.250.000 → válido; -1 → error.
+    límite: solo para Tarjeta de Crédito. Obligatorio, mayor a 0
+        y mayor o igual al balance. Para Cuenta de Ahorros siempre queda vacío.
+        Ej.: límite 5.000.000 con deuda 1.200.000 → válido; límite 1.000.000 con deuda 1.200.000 → error.
+    tipo de cuenta: obligatorio. Uno de los tipos semilla. Por defecto: Cuenta de Ahorros.
+- Entidad "Tipo de cuenta", campos:
+    nombre: nombre del tipo de cuenta (obligatorio).
+    abreviación: 2 letras para distinguirlo y reconocerlo más fácil (obligatorio).
+- Datos semilla (no editables por el usuario; se crean una sola vez y no se duplican):
+    - Cuenta de Ahorros: "CA"
+    - Tarjeta de Crédito: "TC"
 
-## 2. Reglas de negocio (con ejemplos)
-[Las reglas que no se pueden saltar, cada una con un ejemplo concreto que se pueda comprobar.]
-- Cada "Cuenta" debe de guardar almenos esta informacion:
-    nombre: Nombre de la cuenta o nickname de la cuenta (Obligatorio)
-    numero de tarjeta: 4 Ultimos dijitos numericos, para representar en la tarjeta (Obligatorio)
-    balance: Cantidad monetaria de la tarjeta, tiene que se valores positivos y mayores o igual a 0 (obligatorio).
-    limite: Cantidad limite (Obligatorio si es tipo de tarjeta de credito, nulo para cuenta de ahorros)
-    tipo de cuenta: tipo de cuenta a crear(Obligatorio)
-- Cada "Tipo de cuenta" guardar almenos esta informacion:
-    tipo: Nombre del tipo de cuenta (obligatorio)
-    abreviacion: Nombre aberviado por 2 letras para distiguirlo y reconocerlo mas facil
-- se debe de crear estos 2 tipos de cuenta por default, que serian datos semilla y no son editables para el usuario.
-    - Cuenta de Ahorros : "CA"
-    - Tarjeta de Credito: "TC"
+## 4. Requisitos funcionales
+- RF1 - El formulario de cuenta muestra una tarjeta gráfica en la parte superior y, debajo, todos
+        los campos. A medida que el usuario llena los campos, se reflejan en la tarjeta gráfica.
+- RF2 - En el formulario, el usuario elige el tipo de cuenta. Según el tipo:
+        - Cuenta de Ahorros: el campo balance se titula "Saldo en la cuenta" y el campo límite no se muestra.
+        - Tarjeta de Crédito: el campo balance se titula "Deuda a la fecha" y el campo límite se muestra.
+- RF3 - El botón principal del formulario está en la parte superior derecha. Dice "Crear cuenta"
+        al crear y "Guardar cambios" al editar.
+- RF4 - El formulario tiene un botón para regresar en la parte superior izquierda. Si hay cambios
+        sin guardar, pregunta si desea descartarlos antes de volver al Inicio.
+- RF5 - La barra de navegación principal se oculta al entrar al formulario de cuenta (crear o
+        editar) y vuelve a aparecer al salir de él. En Configuración y en todas sus pantallas
+        internas (Datos Maestros, Tipos de cuenta) la barra nunca se oculta.
+- RF6 - En la parte superior del Inicio se muestran las cuentas como tarjetas gráficas, en forma
+        horizontal, con efecto de deslizar para verlas todas. Al final siempre aparece una tarjeta
+        vacía con el signo "+", que abre el formulario para crear una cuenta.
+- RF7 - Al mantener presionada una tarjeta, se muestra un menú con:
+        - Editar: abre el formulario con los datos de la cuenta.
+        - Eliminar: pide confirmación obligatoria antes de eliminar.
+- RF8 - Al tocar una tarjeta (toque sencillo) no sucede nada por el momento.
+- RF9 - Al crear o guardar una cuenta, se vuelve al Inicio y las tarjetas muestran los datos actualizados.
+- RF10 - En Configuración hay una lista con un único ítem, "Datos Maestros". Dentro, una lista con
+         "Tipos de cuenta", donde el usuario ve los 2 tipos de cuenta creados (solo lectura).
 
-## 3. Requisitos funcionales
-- RF1. El sistema debe [comportamiento observable].   [QUÉ hace, no CÓMO. Sin tecnología.]
-RF1 - El formulario del CRUD de Cuentas debe de tener una representacion grafica de tarjeta de credito en la parte superior,
-      y en la parte inferior todos los campos requeridos y opcionales, a medida que va el usuario va llenando se repizan en el grafico
-      de tarjeta, debe de tener la opcion de guardar cambio 0 crear cuenta, y tambien debe de tener el boton de devolverme preguntar si desea perder cambios y que me deje en el home
-RF2- En la parte inferior de la pantalla debe de existir una barra de navegacion(liquid Glass), con 2 opciones una para visualizar el home y
-     la otra para configuraciones.
-RF3 - En la pantalla de Home, se debe de representar en la parte superiro las cuentas con diseño de tarjeta de credito, todas en forma horizontal, y
-      se puede tener el efecto de deslizar para pasar visualizar todas las tarjetas, 
-      siempre representar una tarjeta vacia con el signo mas al final, que este te llevara al formulario de cuentas.
-RF4 - Si se le da Click sostenido a una Cuenta, mostrar un menu desplegable con la opcion de borrar (confimacion obligatoria de si desea eliminar) y de editar la cuenta que lo llevara
-      al formulario para editar los datos de la tarjeta.
-RF5 - Si le da click sencillo a la tarjeta, no hacer nada por el momento.
-RF6 - En la pantalla de configuraciones, crear un list pero por ahora solo con un itme de Datos Maestros, y dentro de esta, 
-      List con Tipos de cuenta, y que el usuario pueda ver los 2 tipos de cuentas creados
-RF7 - Al momento de crear o actualizar cualquier tarjeta, vuelve al Home y se deberan de tener todos los datos actualizados.
+## 5. Estados y casos borde
+- Sin cuentas: el carrusel muestra solo la tarjeta "+".
+- Errores de validación: el botón principal se deshabilita mientras haya campos inválidos
+  y se muestra el error debajo del campo.
+- Cambios sin guardar: preguntar solo si hubo cambios .
+- Cambio de tipo en el formulario: al pasar de Tarjeta de Crédito a Cuenta de Ahorros, el campo
+  límite se oculta y su valor se descarta.
+- Edición del tipo: el tipo queda bloqueado al editar.
+- Eliminación: es definitiva; tras confirmar, la tarjeta desaparece del carrusel.
+- Orden del carrusel: por fecha de creación.
 
+## 6. Criterios de aceptación (verificables sin código)
+- CA1 (RF1) - Al escribir el nombre, el número de tarjeta o el balance, el cambio se ve de inmediato
+              en la tarjeta gráfica del formulario.
+- CA2 (RF2) - Al abrir el formulario para crear, viene seleccionado el tipo Cuenta de Ahorros.
+- CA3 (RF2) - Con Cuenta de Ahorros, el campo límite no se ve, el balance se titula "Saldo en la
+              cuenta" y la cuenta se guarda sin límite.
+- CA4 (RF2) - Con Tarjeta de Crédito, el campo límite se ve y el balance se titula "Deuda a la fecha".
+- CA5 (RF3) - Se puede crear una Cuenta de Ahorros con nombre, 4 dígitos numéricos y balance ≥ 0.
+- CA6 (RF3) - Se puede crear una Tarjeta de Crédito con nombre, 4 dígitos numéricos, balance ≥ 0 y
+              límite válido según las reglas de negocio.
+- CA7 (RF3) - No se puede crear ni guardar una cuenta si: el nombre está vacío, el número no tiene
+              exactamente 4 dígitos numéricos, el balance es negativo o, en Tarjeta de Crédito, el
+              límite falta o es menor que la deuda.
+- CA8 (RF3) - El botón principal está en la esquina superior derecha y dice "Crear cuenta" al crear
+              y "Guardar cambios" al editar.
+- CA9 (RF4) - Al regresar con cambios sin guardar, aparece la pregunta. Si confirmo, vuelvo al Inicio
+              sin guardar; si cancelo, sigo en el formulario con mis datos.
+- CA10 (RF5) - Dentro del formulario de crear o editar no se ve la barra de navegación; al volver al
+               Inicio, la barra aparece de nuevo.
+- CA11 (RF5) - En Configuración, Datos Maestros y Tipos de cuenta, la barra de navegación siempre se ve.
+- CA12 (RF6) - En el Inicio puedo deslizar entre todas las tarjetas y la última siempre es la tarjeta
+               "+". Sin cuentas, solo se ve la tarjeta "+".
+- CA13 (RF6) - Cada tarjeta muestra:
+               - Cuenta de Ahorros: nombre completo del tipo, nombre de la cuenta, "**** " + últimos
+                 4 dígitos y saldo disponible.
+               - Tarjeta de Crédito: nombre completo del tipo, nombre de la cuenta, "**** " + últimos
+                 4 dígitos y deuda a la fecha (siempre positiva).
+- CA14 (RF7) - Al mantener presionada una tarjeta aparecen Editar y Eliminar. Eliminar pide
+               confirmación: si confirmo, la tarjeta desaparece; si cancelo, sigue igual.
+- CA15 (RF7) - Editar abre el formulario con todos los datos de la cuenta cargados.
+- CA16 (RF8) - Un toque sencillo sobre una tarjeta no abre nada.
+- CA17 (RF9) - Después de crear o guardar, estoy en el Inicio y la tarjeta muestra los datos nuevos.
+- CA18 (RF10) - En Tipos de cuenta se ven exactamente "Cuenta de Ahorros" y "Tarjeta de Crédito",
+                sin opción de crear, editar ni eliminar.
+- CA19 - Al cerrar y abrir la app varias veces, siguen existiendo solo 2 tipos de cuenta.
+- CA20 - Las tarjetas y el formulario se ven bien en modo claro y oscuro, y VoiceOver lee de cada
+         tarjeta: tipo, nombre, últimos 4 dígitos y balance.
 
+## 7. Fuera de alcance
+- En el Inicio solo se implementan las tarjetas de cuentas; nada más.
+- En Configuración solo se implementan los Datos Maestros; nada más.
+- Los Datos Maestros solo se consultan; crearlos, editarlos o eliminarlos está fuera de alcance.
+- La barra de navegación no cambia sus opciones, orden ni estilo; el único cambio es ocultarla
+  durante el formulario de cuenta (RF5).
+- No se implementan movimientos, transferencias, detalle de cuenta al tocar la tarjeta ni el cálculo
+  de cupo disponible (límite − deuda).
 
-
-## 4. Criterios de aceptación (verificables sin código)
-- CA1. [Algo que se mira en la app y se sabe si está bien con un sí/no.]
--CA1 - Crear cuenta de tipo Ahorros es posible, si tiene nombre, numero de tarjeta no nulos ; blance puede ser 0 y numeros positivo.
--CA2 - Para cuenta tipo Ahorros ocultar a el usuario el campo limite y que se guarde siempre vacio
--CA3 - Crear Cuenta de Tipo Tarjeta de credito es posible, si tiene nombre, numero de tarjeta no nulos ;  balance y limites puede ser 0 y numeros positivos.
--CA4 - Para el formulario de crear cuenta el campo balance debe de preguntarle a el usuario :
-       si es tipo de cuenta de ahorro, balance debe de preguntar "saldo en la cuenta"
-       si es tipo de cuenta Tarjeta de credito, balance debe de preguntar "deuda a la fecha" y se guarda en positivo
--CA5 - El limite debe de ser un valor positivo y debe de ser mayor o igual a balance (en caso de ser tarjeta de credito)
--CA6 - EL formulario por default debe de venir seleccionado con el tipo de cuenta Ahorros.
-
-CA7 - En el Home en la parte superior, deben de estar todas la cuentas con un diseño de tarjeta de credito, y puedo deslizar entre una y otra
-      para ver todas
-CA8 - En el diseño de la tarjeta de credito debe de visualizarse esta informacion
-        si es cuenta de ahorros: 
-        tipo de cuenta.nombre completo , nombre de cuenta, numero de la tarjeta representado con **** y utlimos 4 digitos, saldo disponible
-        si es tipo de cuenta tarjeta de credito: 
-        tipo de cuenta.nombre completo, nombre de cuenta, numero de la tarjeta representado con *** y ultimos 4 digito, deuda a la fecha (valor positivo siempre)
-
-## 5. Fuera de alcance
-[Lo que esta versión NO hace, dicho explícitamente. La sección que impide que la IA se vaya por las ramas.]
-- En el home solo se implementa la visualizacion de las tarjetas, no implementar algo mas,  esta fuera del alcance
-- En la Configuraciones, solo implementar los Datos Maestros, no implementar nada mas, esta fuera del alcance.
-- los Datos maestros solo se consultan, editar y gestionarlos esta fuera del alcance.
+## 8. Notas técnicas (para design.md)
+- Persistencia: SwiftData. "Tipo de cuenta" como entidad (@Model) con relación Cuenta → Tipo de cuenta.
+  La carga de datos semilla es idempotente: verificar por abreviación antes de insertar.
+- Montos con Decimal, nunca Double.
+- Solo se guardan los últimos 4 dígitos; nunca el número completo de la tarjeta.
+- Formulario: push dentro del NavigationStack de Inicio con .toolbar(.hidden, for: .tabBar)
+  . Botón principal en ToolbarItem(placement: .confirmationAction). Botón de
+  regresar propio en .cancellationAction, ocultando el botón atrás del sistema para poder preguntar
+  antes de salir.
+- Menú de la tarjeta con contextMenu; confirmación de eliminar con confirmationDialog.
+- Carrusel con ScrollView horizontal y .scrollTargetBehavior(.viewAligned).
+- Impacto en changes futuros: el balance se almacena y add-transactions lo actualizará.

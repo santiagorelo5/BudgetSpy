@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24901" systemVersion="25G83" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Account" representedClassName="Account" syncable="YES" codeGenerationType="class">
+        <attribute name="balance" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="creditLimit" optional="YES" attributeType="Decimal"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastFourDigits" attributeType="String"/>
+        <attribute name="name" attributeType="String"/>
+        <relationship name="accountType" maxCount="1" deletionRule="Nullify" destinationEntity="AccountType" inverseName="accounts" inverseEntity="AccountType"/>
+    </entity>
+    <entity name="AccountType" representedClassName="AccountType" syncable="YES" codeGenerationType="class">
+        <attribute name="abbreviation" attributeType="String"/>
+        <attribute name="name" attributeType="String"/>
+        <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Deny" destinationEntity="Account" inverseName="accountType" inverseEntity="Account"/>
+    </entity>
+</model>

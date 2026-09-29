@@ -3,6 +3,7 @@
 //  BudgetSpy
 //
 
+import CoreData
 import SwiftUI
 
 struct ContentView: View {
@@ -27,4 +28,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
