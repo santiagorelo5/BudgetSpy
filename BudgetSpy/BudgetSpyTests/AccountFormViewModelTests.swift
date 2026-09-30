@@ -136,4 +136,61 @@ struct AccountFormViewModelTests {
         #expect(accounts.first?.name == "Ahorros casa")
         #expect(accounts.first?.createdAt == createdAt)
     }
+
+    @Test func creatingWithBalanceRecordsInitialBalance() throws {
+        #expect(makeFilledCreateViewModel().save())
+
+        let account = try #require(try fetchAll(Account.self, in: context).first)
+        let movement = try #require(account.originMovementList.first)
+        #expect(account.originMovementList.count == 1)
+        #expect(movement.kind == .income)
+        #expect(movement.movementDescription == "Saldo inicial")
+        #expect(movement.amountValue == 1_200_000)
+    }
+
+    @Test func creatingWithZeroBalanceRecordsNoMovement() throws {
+        let viewModel = makeFilledCreateViewModel()
+        viewModel.updateBalance(0)
+
+        #expect(viewModel.save())
+
+        #expect(try fetchAll(Movement.self, in: context).isEmpty)
+    }
+
+    @Test func editingBalanceRecordsAdjustment() throws {
+        #expect(makeFilledCreateViewModel().save())
+        let account = try #require(try fetchAll(Account.self, in: context).first)
+
+        let viewModel = AccountFormViewModel(route: .edit(account), context: context)
+        viewModel.updateBalance(1_000_000)
+        #expect(viewModel.save())
+
+        let adjustment = try #require(account.originMovementList.first { $0.movementDescription == "Ajuste de saldo" })
+        #expect(adjustment.kind == .expense)
+        #expect(adjustment.amountValue == -200_000)
+        #expect(account.balanceValue == 1_000_000)
+    }
+
+    @Test func editingOnlyTheNameRecordsNoMovement() throws {
+        #expect(makeFilledCreateViewModel().save())
+        let account = try #require(try fetchAll(Account.self, in: context).first)
+
+        let viewModel = AccountFormViewModel(route: .edit(account), context: context)
+        viewModel.updateName("Ahorros casa")
+        #expect(viewModel.save())
+
+        #expect(try fetchAll(Movement.self, in: context).count == 1)
+    }
+
+    @Test func failedSaveLeavesNeitherAccountNorMovement() throws {
+        try fetchAll(MovementType.self, in: context).forEach(context.delete)
+        try context.save()
+        let viewModel = makeFilledCreateViewModel()
+
+        #expect(viewModel.save() == false)
+
+        #expect(viewModel.saveErrorIsPresented)
+        #expect(try fetchAll(Account.self, in: context).isEmpty)
+        #expect(try fetchAll(Movement.self, in: context).isEmpty)
+    }
 }

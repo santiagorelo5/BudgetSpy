@@ -73,7 +73,7 @@ context: |
      es un defecto, aunque el código funcione.
   5. Moneda: única moneda el peso colombiano (COP). Importes con 2
      decimales, almacenados como Decimal (nunca Double/Float). Formato de
-     visualización: $ 1.000,00 y $ -1.000,00, centralizado en
+     visualización: $ 1.000,00 y -$ 1.000,00, centralizado en
      CurrencyFormatter/CurrencyParser, 
   7. El efecto para escribir valores monetarios dentro de la aplicacione
      es el siguiente, siempre el numero es 0,00 ,si ingresa un numero este se va a ir agregando 

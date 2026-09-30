@@ -49,4 +49,36 @@ struct AccountCarouselViewModelTests {
         #expect(try fetchAll(Account.self, in: context).count == 1)
         #expect(viewModel.deletionConfirmationIsPresented == false)
     }
+
+    @Test func deletingAnAccountConvertsItsTransfersWithoutTouchingOtherBalances() throws {
+        let payroll = try BudgetSpyTests.insertAccount("Nómina", balance: 100_000, in: context)
+        let house = try BudgetSpyTests.insertAccount("Ahorros casa", balance: 10_000, in: context)
+        let ledger = MovementLedger(context: context)
+        let transfer = try ledger.create(MovementDraft(
+            kind: .transfer, amount: 20_000, description: "Ahorro",
+            originAccountID: payroll.id, destinationAccountID: house.id
+        ))
+        try context.save()
+        let viewModel = AccountCarouselViewModel(context: context)
+
+        viewModel.confirmDeletion(of: payroll)
+
+        #expect(viewModel.deleteErrorIsPresented == false)
+        #expect(try fetchAll(Account.self, in: context) == [house])
+        #expect(transfer.kind == .income)
+        #expect(transfer.originAccount == house)
+        #expect(house.balanceValue == 30_000)
+        #expect(house.originMovementList.count == 2)
+    }
+
+    @Test func cancellingKeepsMovements() throws {
+        let payroll = try BudgetSpyTests.insertAccount("Nómina", balance: 100_000, in: context)
+        let viewModel = AccountCarouselViewModel(context: context)
+
+        viewModel.requestDeletion(of: payroll)
+        viewModel.cancelDeletion()
+
+        #expect(payroll.originMovementList.count == 1)
+        #expect(payroll.balanceValue == 100_000)
+    }
 }
