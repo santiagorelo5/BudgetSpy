@@ -11,8 +11,8 @@ context: |
   - Cuenta: cuenta financiera del usuario (banco, efectivo, tarjeta...).
     NO es una cuenta de usuario ni un registro de login.
   - Tipo de cuenta: clasificación de una cuenta (ahorros, efectivo...).
-  - Transacción: movimiento de dinero asociado a una cuenta.
-  - Tipo de transacción: ingreso o gasto.
+  - Movimiento: movimiento de dinero asociado a una cuenta.
+  - Tipo de Movimiento: ingreso, gasto o Transferencia.
 
   Stack técnico (fijado; no se renegocia en propuestas):
   - App nativa iOS, target mínimo iOS 26. Solo iPhone.
