@@ -25,7 +25,7 @@ struct MovementRowContentTests {
 
         #expect(content.role == .outgoing)
         #expect(content.formattedAmount == "-$ 10.000,00")
-        #expect(content.systemImage == "arrow.up.right.circle.fill")
+        #expect(content.systemImage == "arrow.down.right.circle.fill")
     }
 
     @Test func expenseOnCreditCardIsRedAndPositive() throws {
@@ -34,6 +34,7 @@ struct MovementRowContentTests {
 
         #expect(content.role == .outgoing)
         #expect(content.formattedAmount == "$ 10.000,00")
+        #expect(content.systemImage == "arrow.up.right.circle.fill")
     }
 
     @Test func incomeOnSavingsIsGreenAndPositive() throws {
@@ -42,6 +43,16 @@ struct MovementRowContentTests {
 
         #expect(content.role == .incoming)
         #expect(content.formattedAmount == "$ 10.000,00")
+        #expect(content.systemImage == "arrow.up.right.circle.fill")
+    }
+
+    @Test func incomeOnCreditCardIsGreenAndPointsDown() throws {
+        let visa = try insertAccount("Visa", kind: .creditCard, balance: 100_000, in: context)
+        let content = MovementRowContent(movement: try create(.income, 10_000, from: visa), perspective: visa)
+
+        #expect(content.role == .incoming)
+        #expect(content.formattedAmount == "-$ 10.000,00")
+        #expect(content.systemImage == "arrow.down.right.circle.fill")
     }
 
     @Test func transferIsRedInOriginAndGreenInDestination() throws {
@@ -62,6 +73,10 @@ struct MovementRowContentTests {
         let inCreditCard = MovementRowContent(movement: toVisa, perspective: visa)
         #expect(inCreditCard.role == .incoming)
         #expect(inCreditCard.formattedAmount == "-$ 30.000,00")
+
+        for content in [inOrigin, inDestination, inCreditCard] {
+            #expect(content.systemImage == "arrow.left.arrow.right.circle.fill")
+        }
     }
 
     @Test func formatsDateAndReadsAsOneSentence() {

@@ -7,21 +7,19 @@ import SwiftUI
 
 struct AccountCardView: View {
     static let cornerRadius: CGFloat = 20
-    /// Credit card proportion (width / height), used as the minimum height.
+    /// Credit card proportion (width / height). The card always keeps it exactly.
     static let aspectRatio: CGFloat = 1.586
 
     let content: AccountCardContent
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Color.clear
-                .aspectRatio(Self.aspectRatio, contentMode: .fit)
-
-            details
-                .padding(20)
-        }
-        .frame(maxWidth: .infinity)
-        .foregroundStyle(.white)
+        details
+            .padding(20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .aspectRatio(Self.aspectRatio, contentMode: .fit)
+            // The text shrinks to fit instead of stretching the card; VoiceOver reads the full label.
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+            .foregroundStyle(.white)
         .background {
             RoundedRectangle(cornerRadius: Self.cornerRadius)
                 .fill(content.kind.cardGradient)
@@ -56,13 +54,16 @@ struct AccountCardView: View {
             Text(content.displayedName)
                 .font(.title3.weight(.bold))
                 .lineLimit(2)
+                .minimumScaleFactor(0.7)
                 .opacity(content.isNamePlaceholder ? 0.6 : 1)
 
-            Spacer(minLength: 12)
+            Spacer(minLength: 0)
 
             HStack(spacing: 8) {
                 Text(content.maskedLastFourDigits)
                     .font(.body.monospaced())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
 
                 Image(systemName: "wave.3.right")
                     .font(.subheadline)
@@ -73,6 +74,7 @@ struct AccountCardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(content.kind.balanceTitle)
                     .font(.caption)
+                    .lineLimit(1)
                     .opacity(0.85)
 
                 Text(content.formattedBalance)

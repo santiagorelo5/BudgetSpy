@@ -6,42 +6,53 @@
 import CoreData
 import SwiftUI
 
-/// "Movimientos" section of Home: every movement of one account, in a list tall enough for 6 rows.
+/// "Movimientos" section of Home: every movement of one account, newest first,
+/// in an area with the fixed height of 6 rows whatever the number of movements.
 struct MovementListView: View {
     private static let visibleRowCount: CGFloat = 6
 
     @FetchRequest private var movements: FetchedResults<Movement>
     @State private var viewModel: MovementListViewModel
     @State private var movementInDetail: Movement?
-    @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = 73
     private let account: Account
+    private let onCreate: () -> Void
     private let onEdit: (Movement) -> Void
 
-    init(account: Account, context: NSManagedObjectContext, onEdit: @escaping (Movement) -> Void) {
+    init(
+        account: Account,
+        context: NSManagedObjectContext,
+        onCreate: @escaping () -> Void,
+        onEdit: @escaping (Movement) -> Void
+    ) {
         _movements = FetchRequest(
-            sortDescriptors: [],
+            // `date` has only the day; `createdAt` breaks ties with the time.
+            sortDescriptors: [
+                SortDescriptor(\Movement.date, order: .reverse),
+                SortDescriptor(\Movement.createdAt, order: .reverse),
+            ],
             predicate: NSPredicate(format: "originAccount == %@ OR destinationAccount == %@", account, account)
         )
         _viewModel = State(initialValue: MovementListViewModel(context: context))
         self.account = account
+        self.onCreate = onCreate
         self.onEdit = onEdit
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Movimientos")
-                .font(.title3.weight(.semibold))
-                .accessibilityAddTraits(.isHeader)
-                .padding(.horizontal)
+            header
 
-            if movements.isEmpty {
-                Text("Sin movimientos")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
-            } else {
-                list
+            Group {
+                if movements.isEmpty {
+                    Text("Sin movimientos")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    list
+                }
             }
+            .frame(height: rowHeight * Self.visibleRowCount)
         }
         .confirmationDialog(
             viewModel.deletionConfirmationTitle,
@@ -66,8 +77,25 @@ struct MovementListView: View {
         }
     }
 
+    private var header: some View {
+        HStack {
+            Text("Movimientos")
+                .font(.title3.weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
+
+            Spacer()
+
+            Button("Agregar movimiento", systemImage: "plus.circle.fill", action: onCreate)
+                .labelStyle(.iconOnly)
+                .font(.title2)
+                .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
+                .contentShape(.rect)
+        }
+        .padding(.horizontal)
+    }
+
     private var list: some View {
-        List(MovementOrdering.sorted(movements, for: account)) { movement in
+        List(movements) { movement in
             MovementRowView(content: MovementRowContent(movement: movement, perspective: account))
                 .contentShape(.rect)
                 .onLongPressGesture {
@@ -93,7 +121,6 @@ struct MovementListView: View {
         }
         .listStyle(.plain)
         .environment(\.defaultMinListRowHeight, rowHeight)
-        .frame(maxHeight: rowHeight * Self.visibleRowCount)
     }
 
     private func detailIsPresented(for movement: Movement) -> Binding<Bool> {
@@ -111,7 +138,7 @@ struct MovementListView: View {
 #Preview("Con 10 movimientos") {
     let (account, context) = previewAccountWithTenMovements()
 
-    MovementListView(account: account, context: context) { _ in }
+    MovementListView(account: account, context: context, onCreate: {}, onEdit: { _ in })
         .environment(\.managedObjectContext, context)
 }
 
@@ -119,7 +146,7 @@ struct MovementListView: View {
     let context = PersistenceController(inMemory: true).container.viewContext
     let account = Account(context: context)
 
-    MovementListView(account: account, context: context) { _ in }
+    MovementListView(account: account, context: context, onCreate: {}, onEdit: { _ in })
         .environment(\.managedObjectContext, context)
 }
 

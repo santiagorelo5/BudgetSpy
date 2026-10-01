@@ -9,14 +9,13 @@ import Testing
 @MainActor
 struct MovementKindTests {
     @Test(arguments: [
-        (MovementKind.expense, "Gasto", "arrow.up.right.circle.fill"),
-        (MovementKind.income, "Ingreso", "arrow.down.left.circle.fill"),
-        (MovementKind.transfer, "Transferencia", "arrow.left.arrow.right.circle.fill"),
+        (MovementKind.expense, "Gasto"),
+        (MovementKind.income, "Ingreso"),
+        (MovementKind.transfer, "Transferencia"),
     ])
-    func nameAndIcon(kind: MovementKind, name: String, systemImage: String) {
+    func name(kind: MovementKind, name: String) {
         #expect(kind.displayName == name)
         #expect(kind.rawValue == name)
-        #expect(kind.systemImage == systemImage)
     }
 
     @Test func casesAreInFormOrder() {

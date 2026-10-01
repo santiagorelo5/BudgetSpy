@@ -71,6 +71,9 @@ struct AccountCarouselView: View {
             }
         }
         .contentMargins(.horizontal, 16, for: .scrollContent)
+        // Every card has the exact credit card proportion, so the carousel height is fixed:
+        // it never stretches or shrinks with the movements section below it.
+        .fixedSize(horizontal: false, vertical: true)
         .scrollTargetBehavior(.viewAligned)
         .scrollIndicators(.hidden)
         .confirmationDialog(

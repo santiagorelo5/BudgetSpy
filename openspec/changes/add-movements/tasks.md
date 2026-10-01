@@ -5,7 +5,7 @@
 - [x] 1.1 Agregar la versión `BudgetSpy 3` del modelo (Editor → Add Model Version) y marcarla como actual. Verificar en el inspector que `BudgetSpy 3` es la versión activa.
 - [x] 1.2 En `BudgetSpy 3`, crear `MovementType` y `Movement` y agregar a `Account` las relaciones `originMovements` y `destinationMovements`, con los atributos, la opcionalidad, las inversas y las reglas de borrado de design.md §1 (codegen Class Definition). Verificar que compila y que la app abre sobre un almacenamiento de `BudgetSpy 2` sin error de migración.
 - [x] 1.3 Crear `Features/Movements/Models/MovementKind.swift`:
-  - `rawValue` = "Gasto" / "Ingreso" / "Transferencia", más `systemImage`.
+  - `rawValue` = "Gasto" / "Ingreso" / "Transferencia", más `systemImage` (se retira en 8.9).
   - Crear `Movement+Display.swift` con `MovementType.kind`, `Movement.amountValue`, `Movement.kind` y `Movement.effect`.
   - Prueba `MovementKindTests`: el nombre y el ícono de cada caso.
 - [x] 1.4 Crear `Core/Persistence/MovementTypeSeeder.swift`, que busca por nombre, inserta solo los que faltan y guarda solo si insertó. Llamarlo en `PersistenceController.init` después de `AccountTypeSeeder`, con un `Logger` en caso de fallo. Pruebas `MovementTypeSeederTests`:
@@ -79,7 +79,7 @@
   - Transferencia sin Cuenta destino → "Selecciona la cuenta destino".
   - Un borrador válido no da errores.
 - [x] 6.2 Crear `MovementFormViewModel.swift`: valores por defecto, `originOptions` y `destinationOptions`, `select(kind:)`, `selectOrigin`, truncado a 20 caracteres, `editedFields`, `balanceError` con `replacing` al editar, `hasChanges`, `primaryButtonTitle` y `save()`, que devuelve el ID de la Cuenta origen. Pruebas `MovementFormViewModelTests`:
-  - CA2: por defecto Gasto, fecha de hoy, primera Cuenta y sin Cuenta destino.
+  - CA2: por defecto Gasto, fecha de hoy, primera Cuenta y sin Cuenta destino (se cambia a la Cuenta enfocada en 8.10).
   - CA3: sin Cuentas, no hay selección y no se puede guardar.
   - CA4: en Transferencia, la Cuenta origen solo ofrece CA y la Cuenta destino excluye la Cuenta origen.
   - CA5: de Gasto con TC a Transferencia, la Cuenta origen pasa a la primera CA y la Cuenta destino a la primera Cuenta distinta.
@@ -91,7 +91,7 @@
   - CA13: `hasChanges` es verdadero con cambios y falso al revertirlos.
   - CA37: una edición inválida no se puede guardar.
   - Si el guardado falla, muestra el aviso correcto al crear y al editar, y no cambia ningún balance.
-- [ ] 6.3 Crear `MovementFormView.swift` (design.md §8):
+- [x] 6.3 Crear `MovementFormView.swift` (design.md §8):
   - Segmentado Gasto / Ingreso / Transferencia.
   - `CurrencyField` coloreado por tipo.
   - Descripción y `DatePicker(in: ...Date.now)`.
@@ -104,25 +104,26 @@
   - CA35: no se pueden elegir fechas futuras.
   - RF13: el valor es rojo, verde o neutro según el tipo.
 
-## 7. Barra de navegación con "+"
+## 7. Barra de navegación sin "+"
 
-- [ ] 7.1 Agregar `.newMovement` a `AppTab`. En `ContentView`, agregar el `Tab` "+" en el centro, el `Binding` que intercepta la selección y `@State movementFormRoute`, que se pasa a `HomeView` (design.md §5). Actualizar el `#Preview`. Verificar en el simulador:
-  - CA1: la barra muestra Inicio, "+" y Configuración.
-  - El "+" nunca queda seleccionado.
-  - Desde Configuración (incluso dentro de Datos Maestros), "+" abre el formulario en el Inicio.
-  - VoiceOver lee "Agregar movimiento".
-  - Si la barra muestra el texto bajo el "+", aplicar `.labelStyle(.iconOnly)`.
+- [x] 7.1 Revertir el `Tab` "+" de la barra (design.md §5):
+  - Quitar `.newMovement` de `AppTab`.
+  - En `ContentView`, quitar el `Tab` "+", el `Binding` que intercepta la selección y `@State movementFormRoute`. `HomeView` deja de recibirlo como `Binding`.
+  - Actualizar el `#Preview`.
+
+  Verificar en el simulador:
+  - CA1: la barra muestra solo Inicio y Configuración, como en main.
+  - Cambiar de sección sigue funcionando y conserva la navegación de Configuración.
 
 ## 8. Inicio: foco del carrusel y lista de Movimientos
 
-- [ ] 8.1 Modificar `AccountCarouselView` para recibir `Binding<UUID?>` del foco y usar `.scrollPosition(id:)`, con `nil` para la tarjeta "+". Actualizar sus `#Preview`. Verificar en el preview que deslizar cambia el foco y que la tarjeta "+" da `nil`.
-- [x] 8.2 Crear `MovementOrdering.swift` y `MovementRowContent.swift` (design.md §6–§7). Pruebas `MovementOrderingTests`:
-  - Primero por fecha descendente.
-  - A igual fecha, valor con signo descendente ($ 50.000 antes que −$ 10.000).
-  - A igual fecha y valor, `createdAt` descendente.
-  - Una Transferencia se ordena con el signo de la Cuenta enfocada.
+- [x] 8.1 Modificar `AccountCarouselView` (design.md §6):
+  - Recibir `Binding<UUID?>` del foco y usar `.scrollPosition(id:)`, con `nil` para la tarjeta "+".
+  - Fijar la altura del carrusel con la proporción 1,586 sobre el ancho de la tarjeta (85 %).
+  - En `AccountCardView` y `AddAccountCardView`, usar la proporción como tamaño exacto y adaptar el contenido en lugar de estirar la tarjeta.
 
-  Pruebas `MovementRowContentTests`:
+  Actualizar sus `#Preview`. Verificar en el preview que deslizar cambia el foco, que la tarjeta "+" da `nil` y que la tarjeta conserva su proporción con texto dinámico grande.
+- [x] 8.2 Crear `MovementRowContent.swift` (design.md §7). Pruebas `MovementRowContentTests`:
   - CA26: Gasto en CA → rojo "-$ 10.000,00". Gasto en TC → rojo "$ 10.000,00". Ingreso en CA → verde "$ 10.000,00".
   - CA27: una Transferencia es roja en la Cuenta origen y verde en la destino.
   - La etiqueta de accesibilidad dice "Gasto, Compra de café, 30 de septiembre de 2026, menos 10.000 pesos".
@@ -131,33 +132,45 @@
   - CA36: eliminación bloqueada con el texto exacto.
   - Cancelar no cambia nada.
   - Si el guardado falla, muestra "No se pudo eliminar el movimiento. Intenta de nuevo." y hace rollback.
-- [ ] 8.4 Crear `MovementRowView.swift` (ícono, fecha, valor con color y descripción en una línea, elemento de accesibilidad único) y `MovementDetailView.swift` (todos los campos, sin acciones), cada uno con `#Preview` en modo claro y oscuro y con texto dinámico grande. Verificar en el preview que el contenido no se superpone.
-- [ ] 8.5 Crear `MovementListView.swift`:
-  - `@FetchRequest` por Cuenta con orden `MovementOrdering`.
-  - "Sin movimientos" cuando no hay filas.
+- [x] 8.4 Crear `MovementRowView.swift` (ícono, fecha, valor con color y descripción en una línea, elemento de accesibilidad único) y `MovementDetailView.swift` (todos los campos, sin acciones), cada uno con `#Preview` en modo claro y oscuro y con texto dinámico grande. Verificar en el preview que el contenido no se superpone.
+- [x] 8.5 Crear `MovementListView.swift`:
+  - `@FetchRequest` por Cuenta con `sortDescriptors` `date` desc y `createdAt` desc.
+  - Encabezado `HStack`: título "Movimientos" y botón "+" (`plus.circle.fill`) pegado a la derecha, con etiqueta de accesibilidad "Agregar movimiento" y cierre `onCreate`.
+  - Área de altura fija `rowHeight * 6`, tanto con filas como con "Sin movimientos" (centrado).
   - `swipeActions` en los dos bordes con `allowsFullSwipe` (izquierda roja sin `.destructive`, derecha azul).
   - `contextMenu` con vista previa del detalle.
   - `confirmationDialog` y avisos.
 
   Agregar `#Preview` con 10 Movimientos y otro sin Movimientos. Verificar si `contextMenu` sin ítems muestra la vista previa; si no, aplicar el fallback de design.md (Riesgos).
-- [ ] 8.6 Modificar `HomeView`:
+- [x] 8.6 Modificar `HomeView`:
   - Quitar el `ScrollView` externo.
-  - Agregar el `VStack` con el carrusel, el encabezado "Movimientos" y la lista con altura máxima de 6 filas (`@ScaledMetric`).
-  - Ocultar la sección cuando el foco es `nil`.
+  - Agregar el `VStack` con el carrusel de altura fija y la sección "Movimientos" de altura fija (6 filas, `@ScaledMetric`).
+  - Ocultar la sección, y con ella el "+", cuando el foco es `nil`.
+  - `@State movementFormRoute`: el "+" de la sección abre `.create(originAccountID: focusedAccountID)`.
   - Agregar `navigationDestination` para `movementFormRoute`, con `onSaved` que enfoca la Cuenta origen.
   - Editar desde el deslizamiento abre `.edit`.
 
-  Actualizar el `#Preview`. Verificar en el simulador CA15, CA17, CA18, CA19, CA20, CA22, CA24 y CA25, y que no hay conflicto de scroll entre el carrusel y la lista.
-- [ ] 8.7 Agregar Movimientos de ejemplo a `PersistenceController.preview` usando `MovementLedger`: un Gasto, un Ingreso y una Transferencia entre las Cuentas de ejemplo. Verificar que los `#Preview` de Inicio y de la lista los muestran con balances cuadrados.
+  Actualizar el `#Preview`. Verificar en el simulador CA15, CA17, CA18, CA19, CA20, CA22, CA24 y CA25, que no hay conflicto de scroll entre el carrusel y la lista, y que el carrusel y la sección no cambian de altura al pasar entre Cuentas con 0, 2 y 10 Movimientos. Revisar con texto de accesibilidad grande que el Inicio cabe en pantalla (design.md, Riesgos).
+- [x] 8.7 Agregar Movimientos de ejemplo a `PersistenceController.preview` usando `MovementLedger`: un Gasto, un Ingreso y una Transferencia entre las Cuentas de ejemplo. Verificar que los `#Preview` de Inicio y de la lista los muestran con balances cuadrados.
+- [x] 8.8 Cambiar el orden de la lista (design.md §6): eliminar `MovementOrdering.swift` y `MovementOrderingTests.swift` y ordenar en el `@FetchRequest` de `MovementListView`. Verificar en el preview:
+  - El Movimiento de fecha más reciente va arriba.
+  - A igual fecha, el creado más recientemente va arriba, sin importar su valor.
+- [x] 8.9 Cambiar los íconos de la fila (design.md §7): mover el cálculo a `MovementRowContent.systemImage` según el valor con signo en la Cuenta vista y quitar `MovementKind.systemImage`. Actualizar `MovementKindTests` (solo nombre) y `MovementRowContentTests`:
+  - Ingreso en CA → `arrow.up.right.circle.fill`; Gasto en CA → `arrow.down.right.circle.fill`.
+  - Gasto en TC → `arrow.up.right.circle.fill`; Ingreso en TC → `arrow.down.right.circle.fill`.
+  - Transferencia en origen y en destino → `arrow.left.arrow.right.circle.fill`.
+- [x] 8.10 Cuenta origen por defecto = Cuenta enfocada: cambiar `MovementFormRoute.create` a `.create(originAccountID:)` y usarla en `MovementFormViewModel`. Actualizar `MovementFormViewModelTests`:
+  - CA2: con "Nómina" y "Visa", abrir desde "Visa" deja "Visa" como Cuenta.
+  - CA5 sigue pasando: de Gasto con TC a Transferencia, la Cuenta origen pasa a la primera CA.
 
 ## 9. Configuración: Tipos de movimiento
 
-- [ ] 9.1 Crear `Features/Settings/Views/MovementTypeListView.swift` (`@FetchRequest` por nombre, solo lectura, título "Tipos de movimiento") con `#Preview`. Agregar su `NavigationLink` debajo de "Tipos de cuenta" en `MasterDataView` y actualizar su `#Preview`. Verificar:
+- [x] 9.1 Crear `Features/Settings/Views/MovementTypeListView.swift` (`@FetchRequest` por nombre, solo lectura, título "Tipos de movimiento") con `#Preview`. Agregar su `NavigationLink` debajo de "Tipos de cuenta" en `MasterDataView` y actualizar su `#Preview`. Verificar:
   - CA28: se ven exactamente Gasto, Ingreso y Transferencia, en ese orden y sin acciones.
   - CA14: la barra sigue visible en esa pantalla.
 
 ## 10. Verificación integral
 
-- [x] 10.1 Correr todas las pruebas (⌘U) y verificar que pasan en verde.
-- [ ] 10.2 Recorrer en el simulador CA1–CA37 en modo claro y oscuro, con VoiceOver (filas, acciones de deslizar y "+") y con tamaño de texto de accesibilidad grande. Anotar cualquier desviación.
-- [ ] 10.3 Borrar la app del simulador, reinstalarla, y verificar que se crean los 3 Tipos de movimiento, que no hay Cuentas y que al abrir la app varias veces siguen siendo 3 (CA29).
+- [x] 10.1 Correr todas las pruebas (⌘U) y verificar que pasan en verde (repetir tras 8.8–8.10).
+- [x] 10.2 Recorrer en el simulador CA1–CA37 en modo claro y oscuro, con VoiceOver (filas, acciones de deslizar y "+" de la sección Movimientos) y con tamaño de texto de accesibilidad grande. Anotar cualquier desviación.
+- [x] 10.3 Borrar la app del simulador, reinstalarla, y verificar que se crean los 3 Tipos de movimiento, que no hay Cuentas y que al abrir la app varias veces siguen siendo 3 (CA29).

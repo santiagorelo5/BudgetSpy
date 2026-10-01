@@ -19,7 +19,14 @@ struct MovementRowContent: Equatable {
     let signedAmount: Decimal
     let role: Role
 
-    var systemImage: String { kind.systemImage }
+    /// Arrow up when the movement raises the account balance and down when it lowers it,
+    /// so a credit card expense (more debt) points up and a credit card income points down.
+    var systemImage: String {
+        if kind == .transfer {
+            return "arrow.left.arrow.right.circle.fill"
+        }
+        return signedAmount > 0 ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill"
+    }
 
     var formattedDate: String {
         MovementDateFormatter.string(from: date)

@@ -35,7 +35,8 @@ final class MovementFormViewModel {
     ) {
         let accounts = Self.fetchAccounts(in: context)
         let draft = switch route {
-        case .create: MovementDraft(originAccountID: accounts.first?.id)
+        case .create(let originAccountID):
+            MovementDraft(originAccountID: accounts.first { $0.id == originAccountID }?.id ?? accounts.first?.id)
         case .edit(let movement): MovementDraft(movement: movement)
         }
         self.accounts = accounts

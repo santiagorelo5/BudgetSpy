@@ -169,7 +169,7 @@ private extension MovementKind {
 
 #Preview("Crear") {
     NavigationStack {
-        MovementFormView(route: .create, context: PersistenceController.preview.container.viewContext)
+        MovementFormView(route: .create(originAccountID: nil), context: PersistenceController.preview.container.viewContext)
     }
 }
 
@@ -186,6 +186,6 @@ private extension MovementKind {
 
 #Preview("Sin cuentas") {
     NavigationStack {
-        MovementFormView(route: .create, context: PersistenceController(inMemory: true).container.viewContext)
+        MovementFormView(route: .create(originAccountID: nil), context: PersistenceController(inMemory: true).container.viewContext)
     }
 }

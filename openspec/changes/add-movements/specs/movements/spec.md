@@ -91,22 +91,30 @@ El sistema MUST NOT permitir un Movimiento que deje un balance menor que 0 o una
 - **THEN** el Movimiento se guarda y la deuda de "Visa" queda en $ 0,00
 
 ### Requirement: Botón "+" para crear un Movimiento
-Al tocar el botón "+" de la barra de navegación, el sistema MUST abrir el formulario para crear un Movimiento, sin importar la pantalla en la que esté el usuario.
+El encabezado de la sección "Movimientos" del Inicio MUST mostrar, en la misma línea del título "Movimientos", un botón "+" pegado al borde derecho de la pantalla. Al tocarlo, el sistema MUST abrir el formulario para crear un Movimiento. El botón solo existe cuando la sección se muestra, es decir, cuando el carrusel está en una Cuenta. La barra de navegación MUST NOT tener un botón para crear Movimientos. VoiceOver MUST anunciar el botón como "Agregar movimiento".
 
-#### Scenario: Crear desde Inicio
-- **WHEN** el usuario está en Inicio y toca "+"
+#### Scenario: Ubicación del botón
+- **WHEN** el carrusel está en una Cuenta
+- **THEN** el botón "+" se ve en la misma línea del título "Movimientos", alineado al borde derecho de la pantalla
+
+#### Scenario: Crear desde el Inicio
+- **WHEN** el usuario toca el botón "+" de la sección "Movimientos"
 - **THEN** se abre el formulario para crear un Movimiento
 
-#### Scenario: Crear desde Configuración
-- **WHEN** el usuario está en Configuración o en una de sus pantallas internas y toca "+"
-- **THEN** se abre el formulario para crear un Movimiento
+#### Scenario: Tarjeta "+" enfocada
+- **WHEN** el carrusel está en la tarjeta "+"
+- **THEN** no se ve la sección "Movimientos" ni su botón "+"
+
+#### Scenario: VoiceOver anuncia el botón
+- **WHEN** VoiceOver está activo y el usuario enfoca el botón "+" de la sección "Movimientos"
+- **THEN** VoiceOver anuncia "Agregar movimiento"
 
 ### Requirement: Campos del formulario de Movimiento
-El formulario MUST mostrar en la parte superior un selector segmentado con "Gasto", "Ingreso" y "Transferencia", en ese orden. Debajo MUST mostrar los campos valor, descripción, fecha y Cuenta origen. Solo en Transferencia MUST mostrar además el campo Cuenta destino. El campo Cuenta origen MUST titularse "Cuenta" en Gasto e Ingreso y "Cuenta origen" en Transferencia. Al crear, el tipo MUST ser Gasto, la fecha MUST ser la actual y la Cuenta origen MUST ser la primera Cuenta de la lista (el mismo orden del carrusel).
+El formulario MUST mostrar en la parte superior un selector segmentado con "Gasto", "Ingreso" y "Transferencia", en ese orden. Debajo MUST mostrar los campos valor, descripción, fecha y Cuenta origen. Solo en Transferencia MUST mostrar además el campo Cuenta destino. El campo Cuenta origen MUST titularse "Cuenta" en Gasto e Ingreso y "Cuenta origen" en Transferencia. Al crear, el tipo MUST ser Gasto, la fecha MUST ser la actual y la Cuenta origen MUST ser la Cuenta enfocada en el carrusel.
 
 #### Scenario: Valores por defecto al crear
-- **WHEN** el usuario tiene las Cuentas "Nómina" (la más antigua) y "Visa" y abre el formulario para crear un Movimiento
-- **THEN** el tipo seleccionado es Gasto, la fecha es la de hoy, la Cuenta es "Nómina" y no se ve el campo Cuenta destino
+- **WHEN** el usuario tiene las Cuentas "Nómina" (la más antigua) y "Visa", el carrusel está en "Visa" y toca el botón "+" de la sección "Movimientos"
+- **THEN** el tipo seleccionado es Gasto, la fecha es la de hoy, la Cuenta es "Visa" y no se ve el campo Cuenta destino
 - **AND** el valor muestra $ 0,00 y la descripción está vacía
 
 #### Scenario: Título del campo en Transferencia
@@ -144,11 +152,6 @@ Si una lista no tiene Cuentas disponibles, el campo MUST quedar sin selección y
 - **WHEN** el tipo es Transferencia con Cuenta destino "Ahorros casa" y el usuario selecciona Gasto y crea el Movimiento
 - **THEN** el campo Cuenta destino desaparece
 - **AND** el Movimiento se guarda sin Cuenta destino
-
-#### Scenario: Sin Cuentas
-- **WHEN** el usuario no tiene Cuentas y abre el formulario para crear un Movimiento
-- **THEN** el campo Cuenta no tiene selección y muestra "No hay cuentas disponibles"
-- **AND** el botón "Crear movimiento" está deshabilitado
 
 #### Scenario: Transferencia sin Cuentas de Ahorros
 - **WHEN** el usuario solo tiene Tarjetas de Crédito y selecciona Transferencia
@@ -315,12 +318,20 @@ El sistema MUST permitir cambiar todos los campos de un Movimiento, incluidos el
 - **THEN** el saldo de la Cuenta baja $ 100.000,00
 
 ### Requirement: Sección Movimientos en el Inicio
-Debajo del carrusel, el Inicio MUST mostrar una sección titulada "Movimientos" con todos los Movimientos de la Cuenta enfocada en el carrusel. Una Transferencia MUST aparecer en la lista de la Cuenta origen y en la de la Cuenta destino. El área de la lista MUST tener altura para 6 filas. Si hay más, el usuario MUST poder deslizar dentro de la lista para ver los demás. Si el carrusel está en la tarjeta "+", la sección MUST NOT mostrarse. Si la Cuenta no tiene Movimientos, la sección MUST mostrar "Sin movimientos".
+Debajo del carrusel, el Inicio MUST mostrar una sección titulada "Movimientos" con todos los Movimientos de la Cuenta enfocada en el carrusel. Una Transferencia MUST aparecer en la lista de la Cuenta origen y en la de la Cuenta destino. El área de la lista MUST tener una altura fija equivalente a 6 filas, que MUST NOT cambiar según la cantidad de Movimientos ni al cambiar de Cuenta. Si hay más de 6, el usuario MUST poder deslizar dentro de la lista para ver los demás. Si el carrusel está en la tarjeta "+", la sección MUST NOT mostrarse. Si la Cuenta no tiene Movimientos, la sección MUST mostrar "Sin movimientos" dentro de esa misma área.
 
 #### Scenario: Más de 6 Movimientos
 - **WHEN** la Cuenta enfocada tiene 10 Movimientos
 - **THEN** se ven 6 filas
 - **AND** al deslizar dentro de la lista se ven las otras 4
+
+#### Scenario: Menos de 6 Movimientos
+- **WHEN** la Cuenta enfocada tiene 2 Movimientos
+- **THEN** el área de la lista conserva la altura de 6 filas y las 2 filas se ven en la parte superior
+
+#### Scenario: La sección mantiene su tamaño al cambiar de Cuenta
+- **WHEN** el usuario desliza el carrusel de una Cuenta con 10 Movimientos a una sin Movimientos
+- **THEN** la sección "Movimientos" conserva la misma altura y muestra "Sin movimientos" dentro de ella
 
 #### Scenario: Cambiar de Cuenta en el carrusel
 - **WHEN** el usuario desliza el carrusel de "Nómina" a "Visa"
@@ -339,45 +350,54 @@ Debajo del carrusel, el Inicio MUST mostrar una sección titulada "Movimientos" 
 - **THEN** el carrusel muestra solo la tarjeta "+" y no se ve la sección "Movimientos"
 
 ### Requirement: Orden de la lista de Movimientos
-La lista MUST ordenarse por fecha, del más reciente al más antiguo. A igual fecha, MUST ordenarse por el valor con signo que el Movimiento tiene en la Cuenta enfocada, de mayor a menor. Si también empatan, el creado más recientemente MUST ir primero.
+La lista MUST mostrar arriba el Movimiento más reciente: MUST ordenarse por fecha, del más reciente al más antiguo. A igual fecha, MUST desempatarse por la fecha y hora de creación, del creado más recientemente al más antiguo.
 
 #### Scenario: Orden por fecha
 - **WHEN** la Cuenta tiene un Movimiento del 29/09/2026 y otro del 30/09/2026
 - **THEN** el del 30/09/2026 aparece primero
 
-#### Scenario: Misma fecha, distinto valor
-- **WHEN** la Cuenta tiene, el mismo día, un Ingreso de $ 50.000,00 y un Gasto de -$ 10.000,00
-- **THEN** el Ingreso de $ 50.000,00 aparece primero
+#### Scenario: Misma fecha
+- **WHEN** la Cuenta tiene dos Movimientos del 30/09/2026, un Ingreso de $ 50.000,00 creado a las 9:00 y un Gasto de -$ 10.000,00 creado a las 18:30
+- **THEN** el Gasto creado a las 18:30 aparece primero
 
-#### Scenario: Misma fecha y valor
-- **WHEN** la Cuenta tiene dos Gastos de -$ 10.000,00 del mismo día
-- **THEN** aparece primero el que se creó más recientemente
+#### Scenario: Movimiento registrado con fecha pasada
+- **WHEN** el 30/09/2026 la Cuenta tiene un Movimiento del 30/09/2026 y el usuario crea otro con fecha 29/09/2026
+- **THEN** el del 30/09/2026 sigue apareciendo primero
 
 ### Requirement: Contenido y color de una fila
 Cada fila MUST mostrar:
-- Un ícono del Tipo de movimiento.
+- Un ícono que indica el efecto sobre el balance de la Cuenta enfocada: en Gasto e Ingreso, una flecha diagonal hacia arriba si el Movimiento sube el balance y una flecha diagonal hacia abajo si lo baja; en Transferencia, un ícono de flechas opuestas.
 - La fecha con el formato "30 sep 2026".
 - El valor con su signo.
 - La descripción en una línea.
 
-El valor MUST mostrarse como "$ 10.000,00" si es positivo y "-$ 10.000,00" si es negativo, con el signo de la tabla de signo y efecto según la Cuenta enfocada. Un Gasto MUST verse en rojo y un Ingreso en verde. Una Transferencia MUST verse en rojo en la lista de la Cuenta origen y en verde en la de la Cuenta destino. La fila MUST respetar el tamaño de texto dinámico y verse legible en modo claro y oscuro.
+El valor MUST mostrarse como "$ 10.000,00" si es positivo y "-$ 10.000,00" si es negativo, con el signo de la tabla de signo y efecto según la Cuenta enfocada. Un Gasto MUST verse en rojo y un Ingreso en verde. Una Transferencia MUST verse en rojo en la lista de la Cuenta origen y en verde en la de la Cuenta destino. El ícono MUST tomar el mismo color que el valor. Por tanto, en Cuenta de Ahorros un Ingreso MUST llevar la flecha hacia arriba en verde y un Gasto la flecha hacia abajo en rojo; en Tarjeta de Crédito, donde el balance es la deuda, un Gasto MUST llevar la flecha hacia arriba en rojo y un Ingreso la flecha hacia abajo en verde. La fila MUST respetar el tamaño de texto dinámico y verse legible en modo claro y oscuro.
 
 #### Scenario: Gasto en Cuenta de Ahorros
 - **WHEN** la lista muestra un Gasto de $ 10.000,00 de una Cuenta de Ahorros
 - **THEN** el valor se ve en rojo como "-$ 10.000,00"
+- **AND** el ícono es una flecha diagonal hacia abajo en rojo
 
 #### Scenario: Gasto en Tarjeta de Crédito
 - **WHEN** la lista muestra un Gasto de $ 10.000,00 de una Tarjeta de Crédito
 - **THEN** el valor se ve en rojo como "$ 10.000,00"
+- **AND** el ícono es una flecha diagonal hacia arriba en rojo
 
 #### Scenario: Ingreso en Cuenta de Ahorros
 - **WHEN** la lista muestra un Ingreso de $ 10.000,00 de una Cuenta de Ahorros
 - **THEN** el valor se ve en verde como "$ 10.000,00"
+- **AND** el ícono es una flecha diagonal hacia arriba en verde
+
+#### Scenario: Ingreso en Tarjeta de Crédito
+- **WHEN** la lista muestra un Ingreso de $ 10.000,00 de una Tarjeta de Crédito
+- **THEN** el valor se ve en verde como "-$ 10.000,00"
+- **AND** el ícono es una flecha diagonal hacia abajo en verde
 
 #### Scenario: Transferencia en cada Cuenta
 - **WHEN** existe una Transferencia de $ 20.000,00 de "Nómina" a "Ahorros casa"
 - **THEN** en la lista de "Nómina" se ve en rojo como "-$ 20.000,00"
 - **AND** en la lista de "Ahorros casa" se ve en verde como "$ 20.000,00"
+- **AND** en ambas listas el ícono es el de flechas opuestas, con el color del valor
 
 #### Scenario: Descripción y fecha
 - **WHEN** la lista muestra un Movimiento "Compra de café" del 30/09/2026

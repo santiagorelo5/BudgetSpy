@@ -16,15 +16,15 @@ Estado actual observado en el código:
   - `CurrencyFormatter` formatea los negativos como `$ -1.000,00` (`negativePrefix = "$ -"`), y hay una prueba que lo exige.
   - `CurrencyField` implementa la digitación desde `$ 0,00`, sin signos.
 - **Pruebas**: el target `BudgetSpyTests` usa Swift Testing y tiene `makeInMemoryContext()` en `TestSupport.swift`.
-- **Carrusel**: `AccountCarouselView` no expone qué Cuenta está enfocada (no usa `scrollPosition`).
+- **Carrusel**: `AccountCarouselView` no expone qué Cuenta está enfocada (no usa `scrollPosition`). `AccountCardView` usa la proporción 1,586 solo como altura mínima, así que la tarjeta puede estirarse si su contenedor le da más alto.
 
 ## Goals / Non-Goals
 
 **Goals:**
 - Un único componente de dominio es dueño del signo, el efecto y la validación de RF3, y es el único que modifica `Account.balance`.
 - Toda operación que toque balances guarda todo o nada con un solo `context.save()`. Esto aplica a crear, editar y eliminar un Movimiento, y a crear, editar y eliminar una Cuenta.
-- El "+" de la barra usa el `TabView` del sistema y conserva Liquid Glass, sin una barra personalizada.
-- El Inicio no tiene scroll vertical anidado.
+- La barra de navegación no cambia: conserva sus 2 `Tab`. El "+" para crear un Movimiento vive en el encabezado de la sección "Movimientos".
+- El Inicio no tiene scroll vertical anidado, y el carrusel y la sección "Movimientos" tienen altura fija.
 
 **Non-Goals:**
 - Recalcular balances a partir de los Movimientos (el balance sigue almacenado).
@@ -52,7 +52,7 @@ Se crea la versión `BudgetSpy 3.xcdatamodel` y se marca como actual en `.xccurr
 | `amount` | Decimal, obligatorio, por defecto 0 | Lleva el signo respecto a la Cuenta origen (ver Decisión 2). |
 | `movementDescription` | String, obligatorio | No se llama `description` porque choca con `NSObject.description`. |
 | `date` | Date, obligatorio | Inicio del día (`Calendar.current.startOfDay`). |
-| `createdAt` | Date, obligatorio | Último criterio de desempate en el orden. |
+| `createdAt` | Date, obligatorio | Fecha y hora de creación. Desempata el orden de los Movimientos del mismo día. |
 | `originAccount` | to-one → `Account`, obligatorio | Inversa `originMovements`. |
 | `destinationAccount` | to-one → `Account`, opcional | Inversa `destinationMovements`. |
 | `movementType` | to-one → `MovementType`, obligatorio | Inversa `movements`, regla Nullify. |
@@ -139,29 +139,26 @@ Ubicación: `Features/Movements/Models/`. La feature Accounts depende de ella, l
 
 El balance de las demás Cuentas nunca cambia: los Movimientos solo cambian de clasificación, y su efecto sobre la Cuenta que los conserva es el mismo.
 
-### 5. Botón "+" en la barra: un `Tab` que intercepta la selección
+### 5. Botón "+" en el encabezado de la sección "Movimientos"
 
-`AppTab` agrega el caso `.newMovement`. `ContentView` declara 3 `Tab`, en el orden Inicio, "+" y Configuración. El `Tab` del "+" es `Tab(value: .newMovement) { EmptyView() } label: { Label("Agregar movimiento", systemImage: "plus") }`, con contenido vacío.
+La barra de navegación queda como en main: `AppTab` solo tiene `.home` y `.settings`, y `ContentView` declara 2 `Tab` sin `Binding` personalizado.
 
-El `TabView` recibe un `Binding` propio:
-- Si el valor que se asigna es `.newMovement`, **no** cambia `selectedTab`: pone `selectedTab = .home` y `movementFormRoute = .create`.
-- Cualquier otro valor se asigna normalmente.
+El encabezado de `MovementListView` es un `HStack` con el título "Movimientos" (`.isHeader`), un `Spacer` y un `Button` con ícono `plus.circle.fill` (`.font(.title2)`, área táctil de al menos 44 × 44 pt). Su etiqueta de accesibilidad es "Agregar movimiento". El encabezado usa el mismo margen horizontal de la pantalla, así que el botón queda pegado al borde derecho.
 
-Con esto, el "+" nunca queda seleccionado (RF1) y la barra sigue siendo el `TabView` del sistema, con su Liquid Glass nativo. El texto de la etiqueta solo lo usa VoiceOver ("Agregar movimiento"). En el simulador se verifica si la barra muestra ese texto bajo el "+"; si lo muestra, se deja solo el ícono con `.labelStyle(.iconOnly)`, que conserva la etiqueta de accesibilidad.
+`MovementListView` recibe un cierre `onCreate: () -> Void`. `HomeView` lo usa para asignar `movementFormRoute = .create(originAccountID: focusedAccountID)`.
 
 El formulario **se apila en el `NavigationStack` del Inicio**, no se presenta como hoja:
-- `movementFormRoute: MovementFormRoute?` vive en `ContentView` y se pasa a `HomeView` como `Binding`.
+- `movementFormRoute: MovementFormRoute?` es un `@State` de `HomeView`.
 - `HomeView` agrega `.navigationDestination(item: $movementFormRoute)`, junto al del formulario de Cuenta.
 
 Resultado:
 - Regresar y guardar siempre vuelven al Inicio (RF5 y RF7).
 - La barra se oculta con el mismo `.toolbar(.hidden, for: .tabBar)` del formulario de Cuenta (RF6).
-- La pila de Configuración queda intacta, así que cada sección conserva su navegación.
+- La pila de Configuración no participa.
 
 Alternativas descartadas:
-- `Tab(role: .search)`: el sistema lo ubica aparte, a la derecha, así que no queda en el centro.
-- Un botón flotante con `.glassEffect()` sobre la barra: duplica lo que ya hace el sistema, no se integra con el layout de la barra y contradice "preferir componentes nativos".
-- `fullScreenCover`: al abrirlo desde Configuración no vuelve al Inicio por sí solo, y es un patrón distinto al del formulario de Cuenta.
+- Un `Tab` "+" central en la barra, que intercepta la selección. Era la propuesta original. Se descarta por decisión del usuario: el botón queda junto a la lista que modifica y la barra no cambia.
+- Un botón en la toolbar de navegación del Inicio: el Inicio no tiene título ni barra superior, y el botón quedaría lejos de la sección.
 
 ### 6. Inicio: foco del carrusel y lista sin scroll anidado
 
@@ -172,17 +169,22 @@ Alternativas descartadas:
 - Al eliminar una Cuenta, el foco pasa a la primera Cuenta que quede.
 - El formulario de Movimiento recibe un cierre `onSaved: (UUID) -> Void`. `HomeView` lo usa para poner en `focusedAccountID` la Cuenta origen (RF7).
 
+**Altura fija del carrusel**
+- `AccountCarouselView` fija su altura con `.frame(height:)`: el ancho de la tarjeta (85 % del contenedor) dividido por `AccountCardView.aspectRatio` (1,586). El ancho se lee con `onGeometryChange` sobre el carrusel.
+- `AccountCardView` y `AddAccountCardView` usan esa proporción como tamaño exacto, no como mínimo. El contenido de la tarjeta se adapta al espacio (ver Riesgos) en lugar de estirarla.
+- Así el carrusel no cambia de altura al cambiar de Cuenta ni según la sección "Movimientos".
+
 **Sin scroll anidado**
-- Se **elimina** el `ScrollView` vertical externo de `HomeView`. El Inicio pasa a ser un `VStack` con el carrusel, el encabezado "Movimientos" y `MovementListView`.
-- La lista es un `List(.plain)` con `.frame(maxHeight: rowHeight * 6)`. `rowHeight` es un `@ScaledMetric`, así que sigue el tamaño de texto dinámico.
-- Con tamaños de texto muy grandes, el `List` se reduce al espacio disponible y sigue desplazándose por dentro.
+- Se **elimina** el `ScrollView` vertical externo de `HomeView`. El Inicio pasa a ser un `VStack` con el carrusel, la sección "Movimientos" y un `Spacer`.
+- La lista es un `List(.plain)` con `.frame(height: rowHeight * 6)`. `rowHeight` es un `@ScaledMetric`, así que la altura sigue el tamaño de texto dinámico, pero no depende de cuántos Movimientos haya.
+- El estado vacío ("Sin movimientos") ocupa la misma área de `rowHeight * 6`, centrado, para que la sección no cambie de altura.
 - Solo existe un scroll vertical, así que no hay conflicto de scroll anidado. El carrusel horizontal no compite en el eje vertical.
 - Alternativa descartada: todo el Inicio como un único `List`, con el carrusel como fila. RF8 pide un área acotada con scroll propio.
 
 **Datos de la lista**
-- `MovementListView(account:)` usa `@FetchRequest` con el predicado `originAccount == %@ OR destinationAccount == %@`.
-- Ordena en memoria con `MovementOrdering.sorted(_:for:)`, que es puro y tiene pruebas. El segundo criterio (el valor con signo **visto desde la Cuenta enfocada**) no se puede expresar como `NSSortDescriptor` en las Transferencias.
-- Ordenar en memoria no tiene un costo relevante, porque el volumen por Cuenta es pequeño.
+- `MovementListView(account:)` usa `@FetchRequest` con el predicado `originAccount == %@ OR destinationAccount == %@` y los `sortDescriptors` `date` descendente y `createdAt` descendente.
+- `date` guarda solo el día. `createdAt` guarda fecha y hora, así que desempata los Movimientos del mismo día con el más reciente primero.
+- Como el orden ya no depende de la Cuenta enfocada, no hace falta ordenar en memoria. Se elimina `MovementOrdering` y sus pruebas.
 
 ### 7. Fila, detalle y acciones
 
@@ -192,10 +194,12 @@ Alternativas descartadas:
 - También contiene `accessibilityLabel`, por ejemplo: "Gasto, Compra de café, 30 de septiembre de 2026, menos 10.000 pesos".
 - El detalle usa el mismo contenido, con `perspective = origen`.
 
-**Íconos (SF Symbols)**, teñidos con el color del rol:
-- Gasto: `arrow.up.right.circle.fill`.
-- Ingreso: `arrow.down.left.circle.fill`.
+**Íconos (SF Symbols)**, teñidos con el color del rol. El ícono depende del efecto sobre el balance de la Cuenta vista, no solo del Tipo de movimiento, así que lo calcula `MovementRowContent` y no `MovementKind`:
+- Gasto o Ingreso con valor con signo positivo (el balance sube): `arrow.up.right.circle.fill`. Es un Ingreso en Cuenta de Ahorros o un Gasto en Tarjeta de Crédito.
+- Gasto o Ingreso con valor con signo negativo (el balance baja): `arrow.down.right.circle.fill`. Es un Gasto en Cuenta de Ahorros o un Ingreso en Tarjeta de Crédito.
 - Transferencia: `arrow.left.arrow.right.circle.fill`.
+
+`MovementKind.systemImage` se elimina, porque ya no hay un ícono por tipo.
 
 **Fecha**: `MovementDateFormatter`, en `Core/Shared/Formatters/`.
 - Formato visible `d MMM yyyy` con una lista fija de abreviaturas de mes en español ("ene", "feb", …, "sep", …, "dic"). El locale `es` de ICU produce "sept." y la spec pide "sep".
@@ -223,7 +227,7 @@ Alternativas descartadas:
 **`MovementDraft`** es un struct `Equatable` con `kind`, `amount` (`Decimal` sin signo), `description`, `date`, `originAccountID: UUID?` y `destinationAccountID: UUID?`. `hasChanges` es `draft != initialDraft`.
 
 **`MovementFormViewModel`** (`@Observable`):
-- **Datos de entrada**: recibe la ruta (`.create` o `.edit(Movement)`), el contexto y el ledger. Carga las Cuentas ordenadas por `createdAt` y las convierte en `AccountSnapshot`.
+- **Datos de entrada**: recibe la ruta (`.create(originAccountID: UUID)` o `.edit(Movement)`), el contexto y el ledger. Carga las Cuentas ordenadas por `createdAt` y las convierte en `AccountSnapshot`. Al crear, la Cuenta origen por defecto es la de la ruta, es decir, la Cuenta enfocada.
 - **Opciones de Cuenta**: expone `originOptions` y `destinationOptions` según RF2. `select(kind:)` y `selectOrigin(_:)` aplican las reglas de reasignación.
 - **Errores**:
   - `errors`: errores por campo, calculados por `MovementValidator`.
@@ -281,7 +285,6 @@ Alternativas descartadas:
 - `Features/Movements/Models/MovementValidator.swift`
 - `Features/Movements/Models/MovementFormRoute.swift`
 - `Features/Movements/Models/MovementRowContent.swift`
-- `Features/Movements/Models/MovementOrdering.swift`
 - `Features/Movements/Models/Movement+Display.swift` (`amountValue`, `kind`, `effect`)
 - `Features/Movements/ViewModels/MovementFormViewModel.swift`
 - `Features/Movements/ViewModels/MovementListViewModel.swift`
@@ -297,19 +300,17 @@ Alternativas descartadas:
 - `MovementValidatorTests.swift`
 - `MovementFormViewModelTests.swift`
 - `MovementListViewModelTests.swift`
-- `MovementOrderingTests.swift`
 - `MovementRowContentTests.swift`
 - `MovementTypeSeederTests.swift`
 - `MovementDateFormatterTests.swift`
 
 **Archivos modificados**:
-- `App/AppTab.swift`
-- `App/ContentView.swift`
 - `Core/Persistence/BudgetSpy.xcdatamodeld/.xccurrentversion`
 - `Core/Persistence/Persistence.swift` (seeder y Movimientos de ejemplo en `preview`)
 - `Core/Shared/Formatters/CurrencyFormatter.swift`
 - `Features/Home/Views/HomeView.swift`
-- `Features/Accounts/Views/AccountCarouselView.swift`
+- `Features/Accounts/Views/AccountCarouselView.swift` (foco y altura fija)
+- `Features/Accounts/Views/AccountCardView.swift` (proporción exacta, sin estirarse)
 - `Features/Accounts/ViewModels/AccountFormViewModel.swift`
 - `Features/Accounts/ViewModels/AccountCarouselViewModel.swift`
 - `Features/Settings/Views/MasterDataView.swift`
@@ -320,11 +321,11 @@ Alternativas descartadas:
 ## Risks / Trade-offs
 
 - **[Riesgo] En iOS 26, `contextMenu` sin ítems de menú podría no presentar la vista previa.** → Mitigación: se verifica en la primera tarea de interfaz. Si falla, `.onLongPressGesture` presenta `MovementDetailView` como `.popover` con `.presentationCompactAdaptation(.popover)`. Sigue siendo de solo lectura y no choca con `swipeActions`, que usa arrastre horizontal.
-- **[Riesgo] El `Tab` del "+" podría mostrar el texto "Agregar movimiento" bajo el ícono, o parpadear como seleccionado antes de que el `Binding` lo revierta.** → Mitigación: el `Binding` nunca asigna `.newMovement`, así que no hay estado intermedio visible. La etiqueta se revisa en el simulador y se aplica `.labelStyle(.iconOnly)` si hace falta.
+- **[Riesgo] Con alturas fijas y tamaños de texto de accesibilidad, el contenido de la tarjeta podría no caber en su proporción, o el Inicio podría no caber en pantalla.** → Mitigación: la tarjeta adapta su texto (`minimumScaleFactor` o `ViewThatFits`) en lugar de crecer. La altura de la lista sigue a `@ScaledMetric`; si con el tamaño más grande el Inicio no cabe, se limita el crecimiento de `rowHeight` y se verifica en el simulador.
 - **[Riesgo] El balance almacenado se descuadra frente a los Movimientos por una escritura directa que evite el ledger.** → Mitigación: `MovementLedger` es el único que escribe `balance`, y las pruebas verifican que el balance sea igual a la suma de los deltas después de cada operación. Los changes futuros deben usar el mismo componente (ver proposal, Impact).
 - **[Riesgo] `.scrollPosition(id:)` sobre un `LazyHStack` con `viewAligned` podría no reportar el foco mientras el deslizamiento desacelera.** → Mitigación: el foco es definitivo cuando el deslizamiento se detiene, y eso basta para la lista. Se verifica a mano con CA18.
-- **[Trade-off] Se elimina el `ScrollView` externo del Inicio.** Con tamaños de texto de accesibilidad, la lista queda más baja (menos de 6 filas visibles), pero sigue siendo usable y evita el scroll anidado. Se prefiere esto a coordinar dos scrolls verticales.
-- **[Trade-off] El orden se hace en memoria**, no en el `@FetchRequest`. Es aceptable por el poco volumen por Cuenta en una app personal.
+- **[Trade-off] Se elimina el `ScrollView` externo del Inicio.** Evita coordinar dos scrolls verticales, a cambio de que el Inicio dependa de alturas fijas (ver el riesgo anterior).
+- **[Trade-off] El "+" solo está en el Inicio y solo cuando hay una Cuenta enfocada.** Desde Configuración o desde la tarjeta "+" no se puede crear un Movimiento sin volver a una Cuenta. Se acepta porque el botón queda en el contexto de la Cuenta que recibe el Movimiento.
 - **[Trade-off] El usuario no definió los mensajes de justificación para Tarjeta de Crédito.** Se propone el patrón de la Decisión 7. Si el usuario prefiere otra redacción, solo cambian los textos de `MovementDeletionError`.
 
 ## Migration Plan

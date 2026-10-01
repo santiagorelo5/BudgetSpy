@@ -33,7 +33,7 @@ struct MovementFormViewModelTests {
 
     @Test func createStartsWithExpenseTodayAndFirstAccount() throws {
         let accounts = try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
 
         #expect(viewModel.draft.kind == .expense)
         #expect(viewModel.draft.date == Calendar.current.startOfDay(for: .now))
@@ -47,8 +47,16 @@ struct MovementFormViewModelTests {
         }
     }
 
+    @Test func createStartsWithTheFocusedAccount() throws {
+        let accounts = try insertThreeAccounts()
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: accounts.payroll.id), context: context)
+
+        #expect(viewModel.draft.originAccountID == accounts.payroll.id)
+        #expect(viewModel.hasChanges == false)
+    }
+
     @Test func withoutAccountsNothingIsSelectedAndCannotSave() {
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         fill(viewModel)
 
         #expect(viewModel.draft.originAccountID == nil)
@@ -60,7 +68,7 @@ struct MovementFormViewModelTests {
 
     @Test func transferOffersSavingsAsOriginAndOthersAsDestination() throws {
         let accounts = try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
 
         viewModel.select(kind: .transfer)
 
@@ -72,7 +80,7 @@ struct MovementFormViewModelTests {
 
     @Test func switchingToTransferFromCreditCardPicksFirstSavingsAndFirstOtherAccount() throws {
         let accounts = try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         #expect(viewModel.draft.originAccountID == accounts.visa.id)
 
         viewModel.select(kind: .transfer)
@@ -83,7 +91,7 @@ struct MovementFormViewModelTests {
 
     @Test func choosingTheDestinationAsOriginReassignsTheDestination() throws {
         let accounts = try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         viewModel.select(kind: .transfer)
         viewModel.selectDestination(accounts.house.id)
 
@@ -94,7 +102,7 @@ struct MovementFormViewModelTests {
 
     @Test func switchingBackToExpenseDiscardsTheDestination() throws {
         let accounts = try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         viewModel.select(kind: .transfer)
         fill(viewModel)
 
@@ -110,7 +118,7 @@ struct MovementFormViewModelTests {
 
     @Test func transferWithoutSavingsCannotBeSaved() throws {
         try insertAccount("Visa", kind: .creditCard, balance: 100_000, in: context)
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         fill(viewModel)
 
         viewModel.select(kind: .transfer)
@@ -122,7 +130,7 @@ struct MovementFormViewModelTests {
 
     @Test func transferWithoutAnotherAccountCannotBeSaved() throws {
         try insertAccount("Nómina", balance: 100_000, in: context)
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         fill(viewModel)
 
         viewModel.select(kind: .transfer)
@@ -135,13 +143,13 @@ struct MovementFormViewModelTests {
     // MARK: - Fields and errors
 
     @Test func descriptionIsTruncatedToTwentyCharacters() {
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         viewModel.updateDescription(String(repeating: "a", count: 25))
         #expect(viewModel.draft.description.count == 20)
     }
 
     @Test func futureDatesAreNotAccepted() {
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         let pastDate = Calendar.current.date(byAdding: .day, value: -46, to: .now)!
 
         viewModel.updateDate(pastDate)
@@ -153,7 +161,7 @@ struct MovementFormViewModelTests {
 
     @Test func editedFieldsShowTheirErrors() throws {
         try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
 
         viewModel.updateAmount(10_000)
         viewModel.updateAmount(0)
@@ -166,7 +174,7 @@ struct MovementFormViewModelTests {
 
     @Test func balanceErrorIsShownUnderTheAmount() throws {
         let payroll = try insertAccount("Nómina", balance: 50_000, in: context)
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         fill(viewModel, amount: 60_000)
 
         #expect(viewModel.visibleError(for: .amount) == "Saldo insuficiente en Nómina. Disponible: $ 50.000,00")
@@ -182,7 +190,7 @@ struct MovementFormViewModelTests {
 
     @Test func hasChangesIsFalseWhenOpenedAndAfterReverting() throws {
         try insertThreeAccounts()
-        let viewModel = MovementFormViewModel(route: .create, context: context)
+        let viewModel = MovementFormViewModel(route: .create(originAccountID: nil), context: context)
         #expect(viewModel.hasChanges == false)
 
         viewModel.updateDescription("Café")
@@ -236,7 +244,7 @@ struct MovementFormViewModelTests {
             MovementDraft(kind: .expense, amount: 10_000, description: "Compra de café", originAccountID: payroll.id)
         )
         try context.save()
-        let viewModel = MovementFormViewModel(route: isEditing ? .edit(movement) : .create, context: context)
+        let viewModel = MovementFormViewModel(route: isEditing ? .edit(movement) : .create(originAccountID: nil), context: context)
         fill(viewModel, amount: 20_000)
         try fetchAll(MovementType.self, in: context).forEach(context.delete)
 

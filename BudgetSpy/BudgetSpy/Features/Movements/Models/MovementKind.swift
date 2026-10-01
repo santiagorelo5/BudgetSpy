@@ -12,12 +12,4 @@ enum MovementKind: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 
     var displayName: String { rawValue }
-
-    var systemImage: String {
-        switch self {
-        case .expense: "arrow.up.right.circle.fill"
-        case .income: "arrow.down.left.circle.fill"
-        case .transfer: "arrow.left.arrow.right.circle.fill"
-        }
-    }
 }

@@ -2,38 +2,8 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Barra de navegación inferior con secciones principales
-El sistema MUST mostrar, en la parte inferior de todas las pantallas principales, una barra de navegación del sistema con estilo Liquid Glass. La barra MUST contener exactamente 3 elementos, en este orden:
-1. "Inicio" (ícono de casa).
-2. Un botón "+" (ícono de más).
-3. "Configuración" (ícono de engranaje).
-
-El botón "+" MUST ser una acción que abre el formulario para crear un Movimiento (ver capability `movements`), no una sección: MUST NOT quedar seleccionado nunca. El sistema MUST NOT mostrar elementos adicionales en la barra.
-
-#### Scenario: La barra muestra las dos opciones en orden
-- **WHEN** el usuario abre la app
-- **THEN** la barra de navegación inferior es visible
-- **AND** muestra "Inicio" con ícono de casa en primera posición, el botón "+" en segunda posición y "Configuración" con ícono de engranaje en tercera posición
-- **AND** no muestra ningún otro elemento
-
-#### Scenario: El "+" nunca queda seleccionado
-- **WHEN** el usuario toca "+" y luego sale del formulario de Movimiento
-- **THEN** la barra muestra seleccionada la opción "Inicio" y el "+" no aparece seleccionado en ningún momento
-
-#### Scenario: La barra se ve correctamente en modo claro y oscuro
-- **WHEN** el dispositivo está en modo claro o en modo oscuro
-- **THEN** la barra de navegación y sus elementos son legibles y se adaptan a la apariencia del sistema
-
-#### Scenario: El contenido se desplaza por detrás de la barra
-- **WHEN** el contenido de una pantalla principal se desplaza hasta la parte inferior
-- **THEN** el contenido pasa por detrás de la barra de navegación con el efecto de transparencia de Liquid Glass
-
-#### Scenario: Reducir transparencia activado
-- **WHEN** el usuario tiene activada la opción de accesibilidad "Reducir transparencia"
-- **THEN** la barra de navegación sigue visible y legible, con la apariencia que el sistema define para ese ajuste
-
 ### Requirement: Contenido de las pantallas principales
-El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cuentas en su parte superior (ver capability `accounts`) y, debajo, la sección "Movimientos" de la Cuenta enfocada (ver capability `movements`). El sistema MUST mostrar la pantalla de Configuración con el título "Configuración" y una lista con el único ítem "Datos Maestros" (ver capability `account-types`).
+El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cuentas en su parte superior (ver capability `accounts`) y, debajo, la sección "Movimientos" de la Cuenta enfocada (ver capability `movements`). El carrusel MUST tener una altura fija, con la proporción de una tarjeta de crédito, que MUST NOT cambiar al cambiar de Cuenta ni según el contenido de la sección "Movimientos". El sistema MUST mostrar la pantalla de Configuración con el título "Configuración" y una lista con el único ítem "Datos Maestros" (ver capability `account-types`).
 
 #### Scenario: Pantalla de Inicio
 - **WHEN** se muestra la pantalla de Inicio y el carrusel está en una Cuenta
@@ -44,6 +14,10 @@ El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cu
 #### Scenario: Pantalla de Inicio sin Cuentas
 - **WHEN** se muestra la pantalla de Inicio y el usuario no tiene Cuentas
 - **THEN** el carrusel muestra solo la tarjeta "+" y no se ve la sección "Movimientos"
+
+#### Scenario: El carrusel mantiene su tamaño
+- **WHEN** el usuario desliza el carrusel entre una Cuenta con 10 Movimientos, una sin Movimientos y la tarjeta "+"
+- **THEN** el carrusel conserva la misma altura y las tarjetas conservan su proporción de tarjeta de crédito
 
 #### Scenario: Pantalla de Configuración
 - **WHEN** se muestra la pantalla de Configuración
@@ -61,7 +35,7 @@ El sistema MUST ocultar la barra de navegación inferior mientras el formulario 
 - **THEN** en el formulario de Cuenta no se ve la barra de navegación inferior
 
 #### Scenario: Formulario de Movimiento para crear
-- **WHEN** el usuario toca "+" en la barra de navegación
+- **WHEN** el usuario toca el botón "+" de la sección "Movimientos" del Inicio
 - **THEN** en el formulario de Movimiento no se ve la barra de navegación inferior
 
 #### Scenario: Formulario de Movimiento para editar
@@ -75,19 +49,3 @@ El sistema MUST ocultar la barra de navegación inferior mientras el formulario 
 #### Scenario: Pantallas internas de Configuración
 - **WHEN** el usuario navega a Datos Maestros y luego a Tipos de cuenta o a Tipos de movimiento
 - **THEN** la barra de navegación inferior se ve en todo momento
-
-### Requirement: Accesibilidad de la barra de navegación
-El sistema MUST anunciar con VoiceOver cada opción de la barra con su nombre y su estado de selección. MUST anunciar el botón "+" como "Agregar movimiento". MUST respetar el tamaño de texto dinámico del sistema en el título de la pantalla de Configuración.
-
-#### Scenario: VoiceOver anuncia las opciones
-- **WHEN** VoiceOver está activo y el usuario enfoca una opción de la barra
-- **THEN** VoiceOver anuncia "Inicio" o "Configuración" según la opción enfocada
-- **AND** indica si la opción está seleccionada
-
-#### Scenario: VoiceOver anuncia el botón "+"
-- **WHEN** VoiceOver está activo y el usuario enfoca el botón "+" de la barra
-- **THEN** VoiceOver anuncia "Agregar movimiento"
-
-#### Scenario: Texto dinámico grande
-- **WHEN** el usuario tiene configurado un tamaño de texto de accesibilidad grande
-- **THEN** el título "Configuración" se muestra completo con el tamaño correspondiente
