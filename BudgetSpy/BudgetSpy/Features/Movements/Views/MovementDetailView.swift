@@ -6,9 +6,11 @@
 import CoreData
 import SwiftUI
 
-/// Read-only box with every field of a movement, as seen from its origin account.
+/// Read-only box with every field of a movement, as seen from the focused account,
+/// so its kind, icon, sign and color always match the row.
 struct MovementDetailView: View {
     let movement: Movement
+    let perspective: Account
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -31,11 +33,7 @@ struct MovementDetailView: View {
     }
 
     private var content: MovementRowContent {
-        guard let origin = movement.originAccount else {
-            return MovementRowContent(kind: movement.kind, description: movement.movementDescription ?? "",
-                                      date: movement.date ?? .now, signedAmount: movement.amountValue, role: .outgoing)
-        }
-        return MovementRowContent(movement: movement, perspective: origin)
+        MovementRowContent(movement: movement, perspective: perspective)
     }
 
     private func row(_ title: String, value: String, color: Color = .primary) -> some View {
@@ -53,8 +51,9 @@ struct MovementDetailView: View {
     let context = PersistenceController.preview.container.viewContext
     let movement = try? context.fetch(Movement.fetchRequest()).first { $0.kind == .transfer }
 
-    if let movement {
-        MovementDetailView(movement: movement)
+    // Seen from the destination account, as its row shows it.
+    if let movement, let destination = movement.destinationAccount {
+        MovementDetailView(movement: movement, perspective: destination)
     }
 }
 
@@ -62,8 +61,8 @@ struct MovementDetailView: View {
     let context = PersistenceController.preview.container.viewContext
     let movement = try? context.fetch(Movement.fetchRequest()).first { $0.kind == .expense }
 
-    if let movement {
-        MovementDetailView(movement: movement)
+    if let movement, let origin = movement.originAccount {
+        MovementDetailView(movement: movement, perspective: origin)
             .preferredColorScheme(.dark)
             .dynamicTypeSize(.accessibility3)
     }

@@ -162,6 +162,10 @@
 - [x] 8.10 Cuenta origen por defecto = Cuenta enfocada: cambiar `MovementFormRoute.create` a `.create(originAccountID:)` y usarla en `MovementFormViewModel`. Actualizar `MovementFormViewModelTests`:
   - CA2: con "Nómina" y "Visa", abrir desde "Visa" deja "Visa" como Cuenta.
   - CA5 sigue pasando: de Gasto con TC a Transferencia, la Cuenta origen pasa a la primera CA.
+- [x] 8.11 Colores del detalle (design.md §7): `MovementDetailView` recibe la Cuenta enfocada (`perspective`) desde `MovementListView` y construye su `MovementRowContent` con ella en lugar de la Cuenta origen. Actualizar sus `#Preview`. Verificar en el simulador que el detalle coincide con su fila:
+  - Transferencia de Cuenta de Ahorros a Tarjeta de Crédito vista desde la Cuenta de Ahorros → rojo "-$ 10.000,00".
+  - La misma vista desde la Tarjeta de Crédito → verde "-$ 10.000,00".
+  - Transferencia entre dos Cuentas de Ahorros vista desde la destino → verde "$ 20.000,00".
 
 ## 9. Configuración: Tipos de movimiento
 

@@ -102,7 +102,7 @@ struct MovementListView: View {
                     movementInDetail = movement
                 }
                 .popover(isPresented: detailIsPresented(for: movement)) {
-                    MovementDetailView(movement: movement)
+                    MovementDetailView(movement: movement, perspective: account)
                         .presentationCompactAdaptation(.popover)
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {

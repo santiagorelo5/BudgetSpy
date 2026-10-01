@@ -449,8 +449,8 @@ Al deslizar una fila a la derecha, el sistema MUST mostrar un botón azul con í
 
 ### Requirement: Detalle de un Movimiento
 Al mantener presionada una fila, el sistema MUST mostrar un recuadro superpuesto de solo lectura con:
-- El Tipo de movimiento.
-- El valor con signo según la Cuenta origen.
+- El Tipo de movimiento, con el mismo ícono y color que su fila.
+- El valor con signo según la Cuenta enfocada en el carrusel, con el mismo signo y color que su fila.
 - La descripción.
 - La fecha.
 - La Cuenta origen.
@@ -466,6 +466,18 @@ El recuadro MUST NOT tener acciones. Un toque sencillo sobre una fila MUST NOT a
 #### Scenario: Ver el detalle de una Transferencia
 - **WHEN** el usuario mantiene presionada la fila de una Transferencia de "Nómina" a "Ahorros casa"
 - **THEN** el recuadro muestra también la Cuenta destino "Ahorros casa"
+
+#### Scenario: Detalle de una Transferencia vista desde la Cuenta origen
+- **WHEN** existe una Transferencia de $ 10.000,00 de "Cuenta1" (Cuenta de Ahorros) a "Tarjeta1" (Tarjeta de Crédito), el carrusel está en "Cuenta1" y el usuario mantiene presionada su fila
+- **THEN** el recuadro muestra "Transferencia" y "-$ 10.000,00" en rojo, igual que la fila
+
+#### Scenario: Detalle de una Transferencia vista desde una Tarjeta de Crédito destino
+- **WHEN** existe una Transferencia de $ 10.000,00 de "Cuenta1" a "Tarjeta1", el carrusel está en "Tarjeta1" y el usuario mantiene presionada su fila
+- **THEN** el recuadro muestra "Transferencia" y "-$ 10.000,00" en verde, igual que la fila
+
+#### Scenario: Detalle de una Transferencia vista desde una Cuenta de Ahorros destino
+- **WHEN** existe una Transferencia de $ 20.000,00 de "Nómina" a "Ahorros casa", el carrusel está en "Ahorros casa" y el usuario mantiene presionada su fila
+- **THEN** el recuadro muestra "Transferencia" y "$ 20.000,00" en verde, igual que la fila
 
 #### Scenario: Toque sencillo
 - **WHEN** el usuario toca una vez una fila

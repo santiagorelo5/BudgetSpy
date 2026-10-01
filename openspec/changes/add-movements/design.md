@@ -192,7 +192,7 @@ Alternativas descartadas:
 - `MovementRowContent` es un struct que se construye con `(Movement, perspective: Account)`.
 - Contiene `kind`, `systemImage`, `formattedDate` ("30 sep 2026"), `signedAmount`, `formattedAmount`, `role` (outgoing en rojo, incoming en verde) y `description`.
 - También contiene `accessibilityLabel`, por ejemplo: "Gasto, Compra de café, 30 de septiembre de 2026, menos 10.000 pesos".
-- El detalle usa el mismo contenido, con `perspective = origen`.
+- El detalle usa el mismo contenido, con la misma `perspective` de la fila (la Cuenta enfocada): `MovementDetailView(movement:perspective:)`. Así el tipo, el ícono, el signo y el color del detalle siempre coinciden con la fila.
 
 **Íconos (SF Symbols)**, teñidos con el color del rol. El ícono depende del efecto sobre el balance de la Cuenta vista, no solo del Tipo de movimiento, así que lo calcula `MovementRowContent` y no `MovementKind`:
 - Gasto o Ingreso con valor con signo positivo (el balance sube): `arrow.up.right.circle.fill`. Es un Ingreso en Cuenta de Ahorros o un Gasto en Tarjeta de Crédito.
