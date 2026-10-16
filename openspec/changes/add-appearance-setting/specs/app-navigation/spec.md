@@ -17,7 +17,7 @@ El sistema MUST mostrar, en la parte inferior de todas las pantallas principales
 - **THEN** la barra de navegación y sus opciones son legibles y se ven con la misma apariencia que el resto de la app
 
 #### Scenario: La barra sigue la preferencia de apariencia y no la del sistema
-- **WHEN** la preferencia de apariencia es "Claro" y el iPhone está en modo oscuro
+- **WHEN** el usuario apagó el interruptor de "Apariencia" y el iPhone está en modo oscuro
 - **THEN** la barra de navegación se ve en modo claro, igual que las pantallas de la app
 
 #### Scenario: El contenido se desplaza por detrás de la barra
@@ -50,6 +50,7 @@ El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cu
 - **THEN** se ve el título "Configuración" y una lista con los ítems "Datos Maestros" y "Apariencia", en ese orden
 - **AND** no se ve ningún otro ítem
 
-#### Scenario: Fila Apariencia con su selector
+#### Scenario: Fila Apariencia con su interruptor
 - **WHEN** se muestra la pantalla de Configuración
-- **THEN** la fila "Apariencia" muestra al final de la fila el selector con la preferencia de apariencia actual
+- **THEN** la fila "Apariencia" muestra al final de la fila un ícono de sol, el interruptor y un ícono de luna, en ese orden
+- **AND** el interruptor está encendido si la app se ve en modo oscuro y apagado si se ve en modo claro

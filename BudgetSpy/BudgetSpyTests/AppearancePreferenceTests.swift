@@ -15,14 +15,12 @@ struct AppearancePreferenceTests {
         #expect(AppearancePreference.dark.colorScheme == .dark)
     }
 
-    @Test func displayNames() {
-        #expect(AppearancePreference.system.displayName == "Sistema")
-        #expect(AppearancePreference.light.displayName == "Claro")
-        #expect(AppearancePreference.dark.displayName == "Oscuro")
+    @Test func darkModeSwitchOnSavesDark() {
+        #expect(AppearancePreference(isDarkMode: true) == .dark)
     }
 
-    @Test func pickerOrder() {
-        #expect(AppearancePreference.allCases == [.system, .light, .dark])
+    @Test func darkModeSwitchOffSavesLight() {
+        #expect(AppearancePreference(isDarkMode: false) == .light)
     }
 
     @Test func stableRawValues() {
