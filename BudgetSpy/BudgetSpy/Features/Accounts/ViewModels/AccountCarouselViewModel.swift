@@ -42,8 +42,9 @@ final class AccountCarouselViewModel {
 
     func confirmDeletion(of account: Account) {
         accountPendingDeletion = nil
-        context.delete(account)
         do {
+            try MovementLedger(context: context).prepareDeletion(of: account)
+            context.delete(account)
             try context.save()
         } catch {
             logger.error("No se pudo eliminar la cuenta: \(error)")

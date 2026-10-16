@@ -103,8 +103,8 @@ final class AccountFormViewModel {
             let account = try accountToSave()
             account.name = draft.name
             account.lastFourDigits = draft.lastFourDigits
-            account.balanceValue = draft.balance
             account.creditLimitValue = draft.kind.requiresCreditLimit ? draft.creditLimit : nil
+            try recordBalance(of: account)
             try context.save()
             return true
         } catch {
@@ -112,6 +112,15 @@ final class AccountFormViewModel {
             context.rollback()
             saveErrorIsPresented = true
             return false
+        }
+    }
+
+    /// The balance only changes through the ledger, which records the matching movement.
+    private func recordBalance(of account: Account) throws {
+        let ledger = MovementLedger(context: context)
+        switch route {
+        case .create: try ledger.recordInitialBalance(for: account, balance: draft.balance)
+        case .edit: try ledger.recordAdjustment(for: account, to: draft.balance)
         }
     }
 

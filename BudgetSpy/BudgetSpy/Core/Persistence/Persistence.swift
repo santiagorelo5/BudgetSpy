@@ -14,9 +14,9 @@ struct PersistenceController {
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         do {
-            try insertSampleAccounts(in: result.container.viewContext)
+            try insertSampleData(in: result.container.viewContext)
         } catch {
-            logger.error("No se pudieron crear las cuentas de ejemplo: \(error)")
+            logger.error("No se pudieron crear los datos de ejemplo: \(error)")
         }
         return result
     }()
@@ -52,28 +52,47 @@ struct PersistenceController {
         } catch {
             Self.logger.error("No se pudieron crear los tipos de cuenta: \(error)")
         }
+
+        do {
+            try MovementTypeSeeder.seed(in: container.viewContext)
+        } catch {
+            Self.logger.error("No se pudieron crear los tipos de movimiento: \(error)")
+        }
     }
 
-    private static func insertSampleAccounts(in context: NSManagedObjectContext) throws {
+    private static func insertSampleData(in context: NSManagedObjectContext) throws {
         guard let savings = try AccountType.find(.savings, in: context),
               let creditCard = try AccountType.find(.creditCard, in: context) else { return }
+        let ledger = MovementLedger(context: context)
 
         let payroll = Account(context: context)
         payroll.id = UUID()
         payroll.name = "Nómina Bancolombia"
         payroll.lastFourDigits = "4821"
-        payroll.balanceValue = 1_250_000
         payroll.createdAt = .now.addingTimeInterval(-60)
         payroll.accountType = savings
+        try ledger.recordInitialBalance(for: payroll, balance: 1_250_000)
 
         let visa = Account(context: context)
         visa.id = UUID()
         visa.name = "Visa"
         visa.lastFourDigits = "1234"
-        visa.balanceValue = 1_200_000
         visa.creditLimitValue = 5_000_000
         visa.createdAt = .now
         visa.accountType = creditCard
+        try ledger.recordInitialBalance(for: visa, balance: 1_200_000)
+
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now) ?? .now
+        let samples: [MovementDraft] = [
+            MovementDraft(kind: .expense, amount: 10_000, description: "Compra de café", date: .now, originAccountID: payroll.id),
+            MovementDraft(kind: .income, amount: 350_000, description: "Pago freelance", date: yesterday, originAccountID: payroll.id),
+            MovementDraft(kind: .transfer, amount: 200_000, description: "Pago tarjeta", date: yesterday,
+                          originAccountID: payroll.id, destinationAccountID: visa.id),
+            MovementDraft(kind: .expense, amount: 85_000, description: "Mercado", date: .now, originAccountID: visa.id),
+        ]
+        for draft in samples {
+            try ledger.create(draft)
+        }
 
         try context.save()
     }

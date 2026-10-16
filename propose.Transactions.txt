@@ -1,0 +1,196 @@
+/opsx:propose add-movements — El usuario puede crear, ver, editar y eliminar Movimientos (Gasto, Ingreso y Transferencia) en sus Cuentas, y el balance de cada Cuenta se mantiene siempre actualizado y cuadrado con sus Movimientos.
+
+Contexto:
+- Ya existen la barra de navegación, Inicio y Configuración (change add-app-shell) y las Cuentas con su carrusel, formulario y Tipos de cuenta (change add-accounts). Este change agrega funcionalidad; no las recrea.
+- Este change MODIFICA specs existentes:
+    - `app-navigation`: la barra pasa de 2 a 3 elementos (se agrega el botón "+" en el centro); el Inicio deja de tener el carrusel como único contenido (se agrega la lista de Movimientos); la barra también se oculta en el formulario de Movimiento.
+    - `account-types`: Datos Maestros pasa de 1 a 2 ítems ("Tipos de cuenta" y "Tipos de movimiento").
+    - `accounts`: movimiento inicial al crear, movimiento de ajuste al editar el balance y manejo de Movimientos al eliminar una Cuenta.
+
+## 1. Historias de usuario
+- HU1 - Yo como usuario quiero registrar Movimientos (Gasto, Ingreso o Transferencia) en mis Cuentas para llevar el control de mi dinero.
+- HU2 - Yo como usuario quiero ver los Movimientos de cada Cuenta para tener trazabilidad.
+- HU3 - Yo como usuario quiero editar un Movimiento para corregir o actualizar sus datos.
+- HU4 - Yo como usuario quiero eliminar un Movimiento para corregir el balance de la Cuenta.
+- HU5 - Yo como usuario quiero consultar los Tipos de movimiento disponibles desde Configuración.
+
+## 2. Glosario
+- Movimiento: registro de dinero que entra, sale o se mueve entre Cuentas. Un Gasto o un Ingreso afecta una Cuenta; una Transferencia afecta dos.
+- Tipo de movimiento: clasificación de un Movimiento: Gasto, Ingreso o Transferencia.
+- Cuenta origen: Cuenta a la que pertenece el Movimiento. En la interfaz se titula "Cuenta" en Gasto e Ingreso y "Cuenta origen" en Transferencia.
+- Cuenta destino: Cuenta que recibe el dinero en una Transferencia.
+- Valor: importe del Movimiento. El usuario lo ingresa sin signo; el sistema le pone el signo según el Tipo de movimiento y el Tipo de cuenta (ver RF3).
+- Términos ya existentes (no redefinir):
+    - Balance: en Cuenta de Ahorros es el Saldo disponible; en Tarjeta de Crédito es la Deuda a la fecha. Siempre es mayor o igual a 0.
+    - Límite: cupo máximo de una Tarjeta de Crédito.
+
+## 3. Reglas de negocio (con ejemplos)
+- Entidad "Movimiento", campos:
+    valor: obligatorio; pesos colombianos con 2 decimales; distinto de 0. Se ingresa igual que los importes de Cuenta (inicia en $ 0,00, cada dígito se agrega a la derecha, el usuario no puede escribir signos). El signo lo asigna el sistema (RF3).
+        Ej.: $ 10.000,00 → válido; $ 0,00 → error "Ingresa un valor mayor a 0".
+    descripción: obligatoria; máximo 20 caracteres (el campo no acepta más); no puede estar vacía ni tener solo espacios; puede repetirse.
+        Ej.: "Compra de café" → válido; "" o "   " → error "Ingresa una descripción".
+    fecha: obligatoria; solo día (sin hora); por defecto la fecha actual; el usuario la puede cambiar a una fecha pasada; no se permiten fechas futuras (el selector no deja elegirlas).
+        Ej.: con hoy 30/09/2026: 30/09/2026 o 15/08/2026 → válido; 01/10/2026 → no se puede seleccionar.
+    Cuenta origen: obligatoria.
+        Ej.: sin seleccionar → error "Selecciona una cuenta".
+    Cuenta destino: obligatoria si el Tipo de movimiento es Transferencia; vacía si es Gasto o Ingreso. Nunca puede ser igual a la Cuenta origen.
+        Ej.: Transferencia sin destino → error "Selecciona la cuenta destino".
+    Tipo de movimiento: obligatorio (Gasto, Ingreso o Transferencia).
+- Entidad "Tipo de movimiento", campos:
+    nombre: obligatorio.
+- Datos semilla de Tipos de movimiento: "Gasto", "Ingreso" y "Transferencia".
+    - Se crean la primera vez que se abre la app.
+    - No se duplican al abrir la app varias veces; si falta uno, se crea solo ese.
+    - El usuario no puede crearlos, editarlos ni eliminarlos.
+
+## 4. Requisitos funcionales
+- RF1 - Punto de entrada: la barra de navegación tiene un botón "+" en el centro, entre "Inicio" y "Configuración". Tocarlo desde cualquier pantalla abre el formulario para crear un Movimiento. El "+" es una acción, no una sección: nunca queda seleccionado.
+- RF2 - Formulario de Movimiento: en la parte superior, un selector segmentado con Gasto, Ingreso y Transferencia (en ese orden; por defecto Gasto). Debajo: valor, descripción, fecha, Cuenta origen y, solo en Transferencia, Cuenta destino.
+        Valores por defecto y cambios de tipo:
+        - Al crear, la Cuenta origen es la primera Cuenta de la lista (el mismo orden del carrusel: la más antigua primero).
+        - En Transferencia, la lista de Cuenta origen solo muestra Cuentas de Ahorros. La lista de Cuenta destino muestra todas las Cuentas (incluidas las Tarjetas de Crédito) excepto la Cuenta origen seleccionada.
+        - Al cambiar a Transferencia:
+            - Si la Cuenta origen era una Tarjeta de Crédito, se selecciona la primera Cuenta de Ahorros de la lista.
+            - La Cuenta destino es la primera Cuenta de la lista que no sea la Cuenta origen.
+        - Al cambiar la Cuenta origen en Transferencia, si coincide con la Cuenta destino, la Cuenta destino pasa a la primera Cuenta de la lista distinta de la nueva Cuenta origen.
+        - Al cambiar a Gasto o Ingreso, el campo Cuenta destino se oculta y su valor se descarta.
+        - Si la lista de Cuentas disponibles está vacía (no hay Cuentas, no hay Cuentas de Ahorros para una Transferencia o no hay otra Cuenta para el destino), no se selecciona nada, el campo muestra "No hay cuentas disponibles" y no se puede crear el Movimiento.
+- RF3 - Signo del valor, efecto sobre el balance y validación. Un Movimiento nunca puede dejar un balance menor que 0 ni una Deuda a la fecha mayor que el Límite.
+        | Tipo de movimiento      | Cuenta de Ahorros                  | Tarjeta de Crédito                     |
+        |-------------------------|------------------------------------|----------------------------------------|
+        | Gasto                   | valor negativo; balance − valor ≥ 0 | valor positivo; balance + valor ≤ Límite |
+        | Ingreso                 | valor positivo; balance + valor    | valor negativo; balance − valor ≥ 0    |
+        | Transferencia (origen)  | valor negativo; balance − valor ≥ 0 | no permitido                           |
+        | Transferencia (destino) | valor positivo; balance + valor    | valor negativo; balance − valor ≥ 0    |
+        Ej.: Ahorros "Nómina" con $ 50.000,00 y un Gasto de $ 60.000,00 → error "Saldo insuficiente en Nómina. Disponible: $ 50.000,00".
+        Ej.: Tarjeta "Visa" con Deuda a la fecha $ 4.800.000,00, Límite $ 5.000.000,00 y un Gasto de $ 300.000,00 → error "Supera el límite de Visa. Cupo disponible: $ 200.000,00".
+        Ej.: Tarjeta "Visa" con Deuda a la fecha $ 100.000,00 y un Ingreso (o Transferencia hacia ella) de $ 150.000,00 → error "El valor supera la deuda de Visa: $ 100.000,00".
+- RF4 - El botón principal está arriba a la derecha: "Crear movimiento" al crear y "Guardar cambios" al editar. Arriba a la izquierda hay un botón para regresar.
+- RF5 - Al regresar, si hay cambios respecto a los valores con los que se abrió el formulario, se pregunta si desea descartarlos ("Descartar cambios" / "Seguir editando"). Sin cambios, vuelve al Inicio sin preguntar.
+- RF6 - La barra de navegación se oculta mientras el formulario de Movimiento (crear o editar) está abierto y vuelve a aparecer al salir. En Configuración y en todas sus pantallas internas (Datos Maestros, Tipos de cuenta, Tipos de movimiento) la barra nunca se oculta.
+- RF7 - Al crear o guardar un Movimiento se actualizan los balances de las Cuentas afectadas y se vuelve al Inicio. El carrusel se enfoca en la Cuenta origen del Movimiento, y el carrusel y la lista muestran los datos actualizados.
+        Si el guardado falla, se muestra el aviso "No se pudo crear el movimiento. Intenta de nuevo." (al editar: "No se pudieron guardar los cambios. Intenta de nuevo.") y el usuario sigue en el formulario con sus datos.
+- RF8 - En el Inicio, debajo del carrusel, hay una sección "Movimientos" con todos los Movimientos de la Cuenta enfocada en el carrusel.
+        - El área tiene altura para 6 filas a la vista; si hay más, el usuario desliza hacia arriba o hacia abajo dentro de la lista para ver los demás.
+        - Cada fila muestra un ícono del Tipo de movimiento, la fecha (formato "30 sep 2026"), el valor con su signo y la descripción en una línea.
+        - Una Transferencia aparece en la lista de la Cuenta origen y en la de la Cuenta destino, con el signo que le corresponde a cada una (RF3).
+        - Si el carrusel está en la tarjeta "+", la sección no se muestra.
+- RF9 - Al deslizar una fila a la izquierda aparece un botón rojo con ícono de basura; con un deslizamiento largo se acciona directamente. En ambos casos se pide confirmación ("Eliminar movimiento" / "Cancelar").
+- RF10 - Al deslizar una fila a la derecha aparece un botón azul con ícono de editar; con un deslizamiento largo se abre directamente el formulario de edición con los datos del Movimiento.
+- RF11 - Al mantener presionada una fila se muestra un recuadro superpuesto con todos los campos del formulario: Tipo de movimiento, valor con signo, descripción, fecha, Cuenta origen y, si es Transferencia, Cuenta destino. Solo es para ver; no tiene acciones.
+- RF12 - Un toque sencillo sobre una fila no hace nada.
+- RF13 - Color y formato del valor:
+        - Formulario: el valor se ve en rojo en Gasto, en verde en Ingreso y en color neutro en Transferencia.
+        - Lista y detalle del Inicio: Gasto en rojo e Ingreso en verde. Una Transferencia se ve en rojo en la lista de la Cuenta origen y en verde en la de la Cuenta destino.
+        - El signo sigue la tabla de RF3. Formato: "$ 10.000,00" si es positivo y "-$ 10.000,00" si es negativo.
+        - Cada fila lleva además un ícono del Tipo de movimiento, para que el color no sea la única señal.
+- RF14 - En Configuración → Datos Maestros se agrega el ítem "Tipos de movimiento" debajo de "Tipos de cuenta" (la lista queda con 2 ítems). Al tocarlo, el usuario ve los 3 Tipos de movimiento: Gasto, Ingreso y Transferencia, en ese orden y en solo lectura. Tocar un ítem no abre nada.
+- RF15 - Movimiento inicial al crear una Cuenta:
+        - Cuenta de Ahorros con Saldo disponible mayor a 0: se crea un Ingreso con ese valor.
+        - Tarjeta de Crédito con Deuda a la fecha mayor a 0: se crea un Gasto con ese valor.
+        - En ambos casos, la descripción es "Saldo inicial" y la fecha es la de creación de la Cuenta.
+        - Si el balance es $ 0,00, no se crea ningún Movimiento (el punto de partida es 0).
+- RF16 - Editar el balance de una Cuenta: el balance se sigue pudiendo editar en el formulario de Cuenta.
+        - Al guardar, la diferencia se registra como un Movimiento con descripción "Ajuste de saldo" y la fecha actual:
+            - Cuenta de Ahorros: si el saldo sube, es un Ingreso; si baja, es un Gasto.
+            - Tarjeta de Crédito: si la deuda sube, es un Gasto; si baja, es un Ingreso.
+        - Si el balance no cambia, no se crea Movimiento.
+        Ej.: Ahorros con $ 100.000,00 editado a $ 80.000,00 → se crea un Gasto de -$ 20.000,00 "Ajuste de saldo".
+- RF17 - Eliminar una Cuenta (se mantiene la confirmación existente):
+        - Se eliminan los Gastos e Ingresos de la Cuenta.
+        - Las Transferencias en las que la Cuenta eliminada es Cuenta destino se convierten en Gasto de su Cuenta origen, con Cuenta destino vacía. El balance de la Cuenta origen no cambia.
+        - Las Transferencias en las que la Cuenta eliminada es Cuenta origen se convierten en Ingreso de su Cuenta destino: la Cuenta destino pasa a ser la Cuenta origen del Movimiento y la Cuenta destino queda vacía. El balance de esa Cuenta no cambia.
+
+## 5. Estados y casos borde
+- Sin Movimientos: la sección muestra "Sin movimientos".
+- Errores de validación: el botón principal se deshabilita mientras haya campos inválidos, y el mensaje se muestra debajo del campo solo después de que el usuario lo modificó. Un formulario nuevo no muestra errores. Los errores de balance (RF3) se muestran debajo del campo valor.
+- Mensajes:
+    - Debajo del campo:
+        - "Ingresa un valor mayor a 0"
+        - "Ingresa una descripción"
+        - "Selecciona una cuenta"
+        - "Selecciona la cuenta destino"
+        - "Saldo insuficiente en <Cuenta>. Disponible: <valor>"
+        - "Supera el límite de <Cuenta>. Cupo disponible: <valor>"
+        - "El valor supera la deuda de <Cuenta>: <valor>"
+    - Avisos:
+        - "No se pudo crear el movimiento. Intenta de nuevo."
+        - "No se pudieron guardar los cambios. Intenta de nuevo."
+        - "No se puede eliminar el movimiento: <justificación>" (ej.: "el saldo de Nómina quedaría en -$ 20.000,00")
+        - "No se pudo eliminar el movimiento. Intenta de nuevo."
+- Cambios sin guardar: se pregunta solo si hubo cambios respecto a los valores iniciales. Si el usuario revierte los cambios, no se pregunta.
+- Editar un Movimiento:
+    - Se pueden cambiar todos los campos, incluidos el Tipo de movimiento y las Cuentas.
+    - Primero se revierte el efecto original y después se aplica el nuevo. Las reglas de RF3 se validan sobre ese resultado; si alguna no se cumple, no se puede guardar.
+    - Ej.: Ahorros con $ 20.000,00 y un Gasto existente de -$ 30.000,00 que se cambia a $ 50.000,00 → válido ($ 20.000 + $ 30.000 − $ 50.000 = $ 0,00).
+    - Ej.: Ahorros con $ 10.000,00 y un Ingreso existente de $ 50.000,00 que se cambia a Gasto → inválido ($ 10.000 − $ 50.000 − $ 50.000 < 0).
+    - "Saldo inicial" y "Ajuste de saldo" se editan y eliminan como cualquier otro Movimiento.
+- Eliminación de un Movimiento:
+    - Es definitiva. Tras confirmar, el Movimiento desaparece y se recalculan los balances de las Cuentas afectadas.
+    - Si algún balance quedara inválido (menor que 0, o Deuda a la fecha mayor que el Límite), no se elimina y se muestra el aviso con la justificación.
+- Orden de la lista: por fecha, el más reciente primero. A igual fecha, por valor con signo, el mayor primero (ej.: $ 50.000,00 antes que -$ 10.000,00). Si también empatan, el creado más recientemente primero.
+
+## 6. Criterios de aceptación (verificables sin código)
+- CA1 (RF1) - La barra muestra "Inicio", "+" y "Configuración" en ese orden. Tocar "+" desde Inicio o desde Configuración abre el formulario para crear un Movimiento.
+- CA2 (RF2) - Al abrir el formulario para crear, el tipo es Gasto, la fecha es hoy, la Cuenta es la primera del carrusel y no se ve el campo Cuenta destino.
+- CA3 (RF2) - Sin Cuentas creadas, el formulario no tiene Cuenta seleccionada, muestra "No hay cuentas disponibles" y el botón "Crear movimiento" está deshabilitado.
+- CA4 (RF2) - Con Transferencia, la lista de Cuenta origen no muestra Tarjetas de Crédito, la lista de Cuenta destino no muestra la Cuenta origen y sí muestra las Tarjetas de Crédito.
+- CA5 (RF2) - Al pasar de Gasto con una Tarjeta de Crédito a Transferencia, la Cuenta origen cambia a la primera Cuenta de Ahorros y la Cuenta destino a la primera Cuenta distinta.
+- CA6 (RF2) - Al pasar de Transferencia a Gasto, el campo Cuenta destino desaparece y el Movimiento se guarda sin destino.
+- CA7 (RF3) - Ahorros con $ 50.000,00: un Gasto de $ 60.000,00 muestra "Saldo insuficiente en ..." y el botón está deshabilitado. Un Gasto de $ 50.000,00 se permite y el saldo queda en $ 0,00.
+- CA8 (RF3) - Tarjeta con Deuda a la fecha $ 4.800.000,00 y Límite $ 5.000.000,00: un Gasto de $ 300.000,00 no se permite. Uno de $ 200.000,00 sí, y la deuda queda en $ 5.000.000,00.
+- CA9 (RF3) - Tarjeta con Deuda a la fecha $ 100.000,00: un Ingreso o una Transferencia hacia ella de $ 150.000,00 no se permite. Uno de $ 100.000,00 sí, y la deuda queda en $ 0,00.
+- CA10 (RF3) - No se puede crear ni guardar con valor $ 0,00, descripción vacía o solo con espacios, sin Cuenta, o con una Transferencia sin Cuenta destino.
+- CA11 (RF3) - El usuario no puede escribir el signo en el campo valor.
+- CA12 (RF4) - Al crear, el botón dice "Crear movimiento"; al editar, "Guardar cambios".
+- CA13 (RF5) - Regresar sin cambios vuelve al Inicio sin preguntar. Con cambios, pregunta; "Seguir editando" conserva los datos y "Descartar cambios" no guarda nada.
+- CA14 (RF6) - En el formulario de Movimiento no se ve la barra de navegación; al volver al Inicio se ve de nuevo. En Datos Maestros → Tipos de movimiento la barra sigue visible.
+- CA15 (RF7) - Con el carrusel en "Visa", tras crear un Gasto de $ 10.000,00 en la Cuenta de Ahorros "Nómina" con $ 100.000,00, se vuelve al Inicio, el carrusel queda enfocado en "Nómina", su tarjeta muestra $ 90.000,00 y el Movimiento aparece en la lista.
+- CA16 (RF7) - Una Transferencia de $ 20.000,00 de "Nómina" a "Ahorros casa" resta $ 20.000,00 en la primera, suma $ 20.000,00 en la segunda y aparece en la lista de ambas.
+- CA17 (RF8) - Con 10 Movimientos, se ven 6 filas y deslizando dentro de la lista se ven las otras 4.
+- CA18 (RF8) - Al deslizar el carrusel a otra Cuenta, la lista muestra solo los Movimientos de esa Cuenta. En la tarjeta "+" no se ve la sección.
+- CA19 (RF8) - Una Cuenta sin Movimientos muestra "Sin movimientos".
+- CA20 (RF9) - Deslizar poco a la izquierda muestra el botón rojo; deslizar mucho pide la confirmación directamente. "Cancelar" deja todo igual.
+- CA21 (RF9) - Tras eliminar un Gasto de -$ 10.000,00 en Ahorros, el balance de la Cuenta aumenta en $ 10.000,00.
+- CA22 (RF10) - Deslizar poco a la derecha muestra el botón azul; deslizar mucho abre el formulario con los datos del Movimiento y el botón "Guardar cambios".
+- CA23 (RF10) - Cambiar un Gasto de -$ 10.000,00 a Ingreso de $ 10.000,00 en Ahorros aumenta el balance en $ 20.000,00.
+- CA24 (RF11) - Al mantener presionada una fila se ve el recuadro con todos los campos del Movimiento, sin botones de acción.
+- CA25 (RF12) - Un toque sencillo sobre una fila no abre nada.
+- CA26 (RF13) - Un Gasto en Ahorros se ve en rojo como "-$ 10.000,00". Un Gasto en Tarjeta de Crédito se ve en rojo como "$ 10.000,00". Un Ingreso en Ahorros se ve en verde como "$ 10.000,00".
+- CA27 (RF13) - Una Transferencia se ve en rojo en la lista de la Cuenta origen y en verde en la de la Cuenta destino.
+- CA28 (RF14) - Configuración → Datos Maestros muestra "Tipos de cuenta" y "Tipos de movimiento". Este último lista exactamente Gasto, Ingreso y Transferencia, sin opciones para agregar, editar ni eliminar.
+- CA29 (RF14) - Tras cerrar y abrir la app varias veces siguen existiendo exactamente 3 Tipos de movimiento.
+- CA30 (RF15) - Al crear una Cuenta de Ahorros con $ 500.000,00, su lista muestra un Ingreso "Saldo inicial" de $ 500.000,00. Con $ 0,00, su lista muestra "Sin movimientos".
+- CA31 (RF15) - Al crear una Tarjeta de Crédito con Deuda a la fecha $ 1.200.000,00, su lista muestra un Gasto "Saldo inicial" de $ 1.200.000,00. Con $ 0,00, no se crea Movimiento.
+- CA32 (RF16) - Al editar una Cuenta de Ahorros de $ 100.000,00 a $ 80.000,00, su lista muestra un Gasto "Ajuste de saldo" de -$ 20.000,00. Guardar la Cuenta sin cambiar el balance no crea Movimiento.
+- CA33 (RF17) - Al eliminar "Ahorros casa", destino de una Transferencia de "Nómina", el Movimiento se ve en "Nómina" como Gasto, sin Cuenta destino, y el saldo de "Nómina" no cambia.
+- CA34 (RF17) - Al eliminar "Nómina", origen de una Transferencia de $ 20.000,00 hacia "Ahorros casa", el Movimiento se ve en "Ahorros casa" como Ingreso de $ 20.000,00, sin Cuenta destino, y el saldo de "Ahorros casa" no cambia. Los demás Movimientos de "Nómina" desaparecen.
+- CA35 (RF2) - El selector de fecha permite elegir hoy o una fecha pasada, pero no una fecha futura.
+- CA36 (Estados) - No se puede eliminar un Ingreso si el saldo de la Cuenta quedaría negativo, y se muestra el aviso con la justificación.
+- CA37 (Estados) - No se puede guardar la edición de un Movimiento si el resultado incumple alguna regla de RF3.
+
+## 7. Fuera de alcance
+- En el Inicio solo se agrega la sección de Movimientos; no hay buscador, filtros, totales ni pantalla "Ver todos".
+- En Configuración solo se agrega "Tipos de movimiento" en Datos Maestros. Crear, editar o eliminar Tipos de movimiento está fuera de alcance.
+- Categorías, Movimientos recurrentes o programados, adjuntos, informes y gráficos quedan fuera de alcance.
+- La barra de navegación no cambia el orden, el estilo ni el comportamiento de "Inicio" y "Configuración". Los únicos cambios son el botón "+" central y ocultarla durante el formulario de Movimiento.
+- Las Cuentas no se reimplementan. Solo se modifica lo indicado en RF15, RF16 y RF17 y la actualización del balance.
+
+## 8. Notas técnicas (para design.md)
+- Persistencia:
+    - Nuevas entidades Core Data `MovementType` (nombre) y `Movement` (valor Decimal con signo según RF3 respecto a la Cuenta origen, descripción, fecha, fecha de creación, relaciones a Cuenta origen, Cuenta destino opcional y Tipo de movimiento). El efecto sobre la Cuenta destino se deriva de la tabla de RF3.
+    - Migración ligera.
+- Balance almacenado en la Cuenta, no calculado. Crear, editar o eliminar un Movimiento, y también crear, editar o eliminar una Cuenta (RF15–RF17), revierte el efecto anterior y aplica el nuevo en el mismo contexto y con un solo guardado (todo o nada).
+- La lógica de signo, efecto y validación de RF3 vive en un único componente de dominio usado por el formulario de Movimiento y el de Cuenta. Se prueba con Swift Testing: todas las celdas de la tabla, la edición con cambio de tipo o Cuenta, la eliminación bloqueada, RF15–RF17 y el orden de la lista.
+- Botón "+" en la barra: TabView no tiene un botón de acción central nativo. El design.md debe elegir y justificar la solución (p. ej. una pestaña que intercepta la selección y presenta el formulario sin cambiar la pestaña activa), manteniendo el estilo Liquid Glass del sistema.
+- Componentes nativos: `Picker(.segmented)`, `swipeActions` con `allowsFullSwipe` (izquierda y derecha), `contextMenu` con preview para el detalle y `confirmationDialog` para eliminar.
+- La lista vertical con altura fija para 6 filas está dentro del Inicio con el carrusel: evitar conflictos de scroll anidado.
+- Reinicio de datos: las Cuentas creadas antes de este change se eliminan borrando la app del simulador o del dispositivo a mano. No se escribe código de migración ni de limpieza de datos.
+- Plataforma: solo iPhone; modo claro y oscuro; Dynamic Type en filas, formulario y detalle sin romper el diseño.
+- VoiceOver:
+    - El botón "+" se lee como "Agregar movimiento".
+    - Cada fila se lee como un solo elemento: "Gasto, Compra de café, 30 de septiembre de 2026, menos 10.000 pesos".
+    - Las acciones de deslizar están disponibles como acciones de accesibilidad.
+- Impacto futuro: como el balance es almacenado, cualquier change que toque Movimientos o balances debe usar el mismo componente de dominio. Las categorías (change posterior) se relacionarán con `Movement`.
+

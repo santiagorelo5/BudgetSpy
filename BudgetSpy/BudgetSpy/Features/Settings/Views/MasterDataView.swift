@@ -12,6 +12,9 @@ struct MasterDataView: View {
             NavigationLink("Tipos de cuenta") {
                 AccountTypeListView()
             }
+            NavigationLink("Tipos de movimiento") {
+                MovementTypeListView()
+            }
         }
         .navigationTitle("Datos Maestros")
     }
