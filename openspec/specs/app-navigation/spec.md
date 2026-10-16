@@ -7,7 +7,7 @@ Define la estructura base de navegación de BudgetSpy: una barra de navegación 
 ## Requirements
 
 ### Requirement: Barra de navegación inferior con secciones principales
-El sistema MUST mostrar, en la parte inferior de todas las pantallas principales, una barra de navegación del sistema con estilo Liquid Glass que contiene exactamente 2 opciones, en este orden: "Inicio" (ícono de casa) y "Configuración" (ícono de engranaje). El sistema MUST NOT mostrar opciones adicionales en la barra.
+El sistema MUST mostrar, en la parte inferior de todas las pantallas principales, una barra de navegación del sistema con estilo Liquid Glass que contiene exactamente 2 opciones, en este orden: "Inicio" (ícono de casa) y "Configuración" (ícono de engranaje). El sistema MUST NOT mostrar opciones adicionales en la barra. La barra MUST verse siempre con la misma apariencia que el resto de la app, según la preferencia de apariencia (ver capability `appearance`).
 
 #### Scenario: La barra muestra las dos opciones en orden
 - **WHEN** el usuario abre la app
@@ -17,8 +17,12 @@ El sistema MUST mostrar, en la parte inferior de todas las pantallas principales
 - **AND** no muestra ninguna otra opción
 
 #### Scenario: La barra se ve correctamente en modo claro y oscuro
-- **WHEN** el dispositivo está en modo claro o en modo oscuro
-- **THEN** la barra de navegación y sus opciones son legibles y se adaptan a la apariencia del sistema
+- **WHEN** la app se ve en modo claro o en modo oscuro
+- **THEN** la barra de navegación y sus opciones son legibles y se ven con la misma apariencia que el resto de la app
+
+#### Scenario: La barra sigue la preferencia de apariencia y no la del sistema
+- **WHEN** el usuario apagó el interruptor de "Apariencia" y el iPhone está en modo oscuro
+- **THEN** la barra de navegación se ve en modo claro, igual que las pantallas de la app
 
 #### Scenario: El contenido se desplaza por detrás de la barra
 - **WHEN** el contenido de una pantalla principal se desplaza hasta la parte inferior
@@ -65,7 +69,7 @@ El sistema MUST conservar la navegación de cada sección de forma independiente
 - **THEN** se muestra la pantalla principal de Configuración
 
 ### Requirement: Contenido de las pantallas principales
-El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cuentas en su parte superior (ver capability `accounts`) y, debajo, la sección "Movimientos" de la Cuenta enfocada (ver capability `movements`). El carrusel MUST tener una altura fija, con la proporción de una tarjeta de crédito, que MUST NOT cambiar al cambiar de Cuenta ni según el contenido de la sección "Movimientos". El sistema MUST mostrar la pantalla de Configuración con el título "Configuración" y una lista con el único ítem "Datos Maestros" (ver capability `account-types`).
+El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cuentas en su parte superior (ver capability `accounts`) y, debajo, la sección "Movimientos" de la Cuenta enfocada (ver capability `movements`). El carrusel MUST tener una altura fija, con la proporción de una tarjeta de crédito, que MUST NOT cambiar al cambiar de Cuenta ni según el contenido de la sección "Movimientos". El sistema MUST mostrar la pantalla de Configuración con el título "Configuración" y una lista con exactamente dos ítems, en este orden: "Datos Maestros" (ver capability `account-types`) y "Apariencia" (ver capability `appearance`).
 
 #### Scenario: Pantalla de Inicio
 - **WHEN** se muestra la pantalla de Inicio y el carrusel está en una Cuenta
@@ -83,7 +87,13 @@ El sistema MUST mostrar la pantalla de Inicio sin título, con el carrusel de Cu
 
 #### Scenario: Pantalla de Configuración
 - **WHEN** se muestra la pantalla de Configuración
-- **THEN** se ve el título "Configuración" y una lista con el único ítem "Datos Maestros"
+- **THEN** se ve el título "Configuración" y una lista con los ítems "Datos Maestros" y "Apariencia", en ese orden
+- **AND** no se ve ningún otro ítem
+
+#### Scenario: Fila Apariencia con su interruptor
+- **WHEN** se muestra la pantalla de Configuración
+- **THEN** la fila "Apariencia" muestra al final de la fila un ícono de sol, el interruptor y un ícono de luna, en ese orden
+- **AND** el interruptor está encendido si la app se ve en modo oscuro y apagado si se ve en modo claro
 
 ### Requirement: Visibilidad de la barra de navegación en pantallas internas
 El sistema MUST ocultar la barra de navegación inferior mientras el formulario de Cuenta o el formulario de Movimiento (crear o editar) esté abierto. Al salir de ellos, MUST volver a mostrarla. En Configuración y en todas sus pantallas internas (Datos Maestros, Tipos de cuenta, Tipos de movimiento) la barra MUST permanecer visible.

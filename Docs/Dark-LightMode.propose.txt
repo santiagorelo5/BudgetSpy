@@ -1,0 +1,62 @@
+/opsx:propose add-appearance-setting — Permitir que el usuario elija la apariencia de la app (sistema, claro u oscuro) desde Configuración.
+
+Contexto: ya existen la barra de navegación inferior (Inicio / Configuración) y la pantalla Configuración, que hoy muestra una lista con el único ítem "Datos Maestros" (capability `app-navigation`). Este change agrega un ítem a esa lista y MODIFICA los requisitos "Contenido de las pantallas principales" y "Barra de navegación inferior con secciones principales" de `app-navigation`; no crea una pantalla de Configuración nueva.
+
+## 1. Historias de usuario
+- HU1 - Yo como usuario quiero elegir si la app se ve en modo claro o en modo oscuro, para usarla con la apariencia que me resulta más cómoda.
+- HU2 - Yo como usuario quiero que, si no elijo nada, la app use la apariencia del sistema, para que se comporte igual que el resto de mi iPhone.
+
+## 2. Glosario
+- Apariencia: cómo se ve la app (claro u oscuro). Usar siempre este término.
+- Apariencia del sistema: el modo claro u oscuro configurado en los Ajustes de iOS del dispositivo.
+- Modo claro / Modo oscuro: las apariencias claras y oscuras estándar de iOS.
+- Preferencia de apariencia: la opción que el usuario eligió en la app.
+
+## 3. Reglas de negocio (con ejemplos)
+- Preferencia de apariencia: tres opciones "Sistema", "Claro", "Oscuro" (valor por defecto: "Sistema").
+- Valor por defecto (primera vez que se abre la app): la app sigue la apariencia del sistema.
+  Ej.: sistema en oscuro y el usuario nunca cambió nada → la app se ve en modo oscuro.
+- Si el usuario eligió una apariencia fija (Claro u Oscuro), la app la mantiene aunque cambie la apariencia del sistema.
+  Ej.: preferencia "Claro" y el iPhone cambia a oscuro → la app sigue en claro.
+- Persistencia: la preferencia se conserva al cerrar y reabrir la app.
+- Consistencia: toda la app (pantallas, barra de navegación inferior, hojas y alertas) se ve siempre con la misma apariencia; ninguna parte sigue al sistema si la preferencia es Claro u Oscuro.
+  Ej.: preferencia "Claro" y el iPhone en oscuro → las pantallas y la barra de navegación se ven en claro.
+
+## 4. Requisitos funcionales
+- RF1 - En la pantalla Configuración, la lista muestra un nuevo ítem "Apariencia" debajo de "Datos Maestros". El control para elegir la apariencia está al final de la misma fila (no abre otra pantalla).
+- RF2 - Al cambiar la preferencia, toda la app (pantallas, barra de navegación inferior, hojas y alertas) cambia de apariencia de inmediato, sin reiniciar la app ni salir de Configuración.
+- RF3 - Mientras la preferencia sea "seguir al sistema", si el usuario cambia la apariencia del iPhone, la app cambia con ella.
+
+## 5. Estados y casos borde
+- Estado inicial: sin preferencia guardada, la app sigue la apariencia del sistema y el control muestra "Sistema" seleccionado.
+- No hay validaciones ni confirmaciones: el cambio se aplica al instante y no hay botón Guardar ni Cancelar.
+
+## 6. Criterios de aceptación (verificables sin código)
+- CA1 (RF1) - En Configuración se ve el ítem "Apariencia" con su control al final de la fila, junto a "Datos Maestros", y no hay otros ítems nuevos.
+- CA2 (RF2) - Al elegir Oscuro estando en claro, Configuración, Inicio y la barra de navegación se ven en oscuro sin reiniciar la app.
+- CA3 (RF2) - Al elegir Claro estando en oscuro, toda la app se ve en claro.
+- CA4 (HU2) - En una instalación nueva, con el iPhone en oscuro, la app abre en oscuro; con el iPhone en claro, abre en claro.
+- CA5 (RF3) - Con la preferencia "seguir al sistema", cambiar el iPhone de claro a oscuro desde el Centro de control cambia la app a oscuro.
+- CA6 (Reglas) - Con la preferencia "Claro", cambiar el iPhone a oscuro NO cambia la app: sigue en claro.
+- CA7 (Persistencia) - Tras elegir Oscuro, cerrar la app por completo y reabrirla, la app abre en oscuro.
+- CA8 - Con VoiceOver activo, el control se anuncia como "Apariencia" junto con su valor actual.
+- CA9 (Consistencia) - Con la preferencia "Claro" y el iPhone en oscuro (o "Oscuro" y el iPhone en claro), Inicio, Configuración, la barra de navegación, las hojas y las alertas se ven todas con la apariencia elegida; ninguna queda con la apariencia del sistema.
+
+## 7. Fuera de alcance
+- No se crean colores, temas ni paletas propias; se usan los modos claro y oscuro estándar de iOS.
+- Colores de acento, iconos alternativos de la app y temas por pantalla.
+- Cambio automático por horario dentro de la app.
+- No se modifica "Datos Maestros" ni las pantallas de Inicio, Cuentas o Movimientos (solo cambian de apariencia).
+
+## 8. Notas técnicas (para design.md)
+- Persistencia: la preferencia de apariencia es un ajuste de la app, no un dato de negocio; se guarda en UserDefaults (p. ej. @AppStorage), NO en Core Data.
+- Aplicación: se aplica una sola vez en la raíz (BudgetSpyApp/ContentView) con `.preferredColorScheme(...)`; el valor `nil` significa seguir al sistema. No se crean colores personalizados para cada modo.
+- Componentes: control nativo en la fila de la lista (Picker con estilo `.menu` o Toggle, según DECIDIR 1).
+- Ubicación del código: Features/Settings/. No hace falta un ViewModel (no hay lógica más allá de leer y escribir el ajuste).
+- Specs: MODIFICA dos requisitos de `app-navigation`: "Contenido de las pantallas principales" (la lista de Configuración pasa a tener "Datos Maestros" y "Apariencia") y "Barra de navegación inferior con secciones principales" (la barra se ve con la misma apariencia que el resto de la app, según la preferencia de apariencia, y no siempre con la apariencia del sistema). Crea la capability `appearance`.
+- Pruebas: si el valor guardado se convierte a un esquema de color (Sistema→nil, Claro→.light, Oscuro→.dark), cubrir esa conversión con Swift Testing.
+
+## 9. Decisiones abiertas
+- [DECIDIR 1] Tipo de control — selector con tres opciones Sistema/Claro/Oscuro.
+- [DECIDIR 2] ¿Se conserva la preferencia al reabrir la app? — Sí.
+- [DECIDIR 3] Posición de "Apariencia" en la lista de Configuración — debajo de "Datos Maestros".

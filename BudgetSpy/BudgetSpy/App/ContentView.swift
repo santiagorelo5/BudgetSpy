@@ -8,6 +8,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab: AppTab = .home
+    @AppStorage(AppearancePreference.storageKey) private var appearance: AppearancePreference = .system
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -23,6 +24,7 @@ struct ContentView: View {
                 }
             }
         }
+        .preferredColorScheme(appearance.colorScheme)
     }
 }
 
